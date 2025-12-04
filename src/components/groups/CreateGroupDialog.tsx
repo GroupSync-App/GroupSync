@@ -82,7 +82,7 @@ export function CreateGroupDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
           <Plus className="h-4 w-4 mr-2" />
           Neue Gruppe
         </Button>
