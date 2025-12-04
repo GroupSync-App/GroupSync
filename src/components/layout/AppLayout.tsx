@@ -37,11 +37,14 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
       {showHeader && !isAuthPage && (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
           <div className="container flex h-14 items-center justify-between">
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Link to="/dashboard" className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
                 <Users className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-semibold text-foreground">GroupSync</span>
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold text-foreground leading-tight">GroupSync</span>
+                <span className="text-xs text-muted-foreground hidden sm:block">Zusammen mehr erreichen</span>
+              </div>
             </Link>
 
             {user && (

@@ -10,21 +10,10 @@ import { useGroups } from "@/hooks/useGroups";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { format } from "date-fns";
-import { de } from "date-fns/locale";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { groups, loading } = useGroups();
-
-  const formatDeadline = (deadline: string | null) => {
-    if (!deadline) return undefined;
-    try {
-      return format(new Date(deadline), "d. MMM yyyy", { locale: de });
-    } catch {
-      return undefined;
-    }
-  };
 
   return (
     <AppLayout>
@@ -93,9 +82,10 @@ export default function Dashboard() {
               {groups.map((group) => (
                 <GroupCard
                   key={group.id}
+                  id={group.id}
                   title={group.name}
                   subject={group.subject || undefined}
-                  deadline={formatDeadline(group.deadline)}
+                  deadline={group.deadline || undefined}
                   memberCount={group.memberCount}
                   maxMembers={group.max_members}
                   onClick={() => navigate(`/groups/${group.id}`)}
