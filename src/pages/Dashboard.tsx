@@ -1,4 +1,4 @@
-import { Plus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -6,6 +6,7 @@ import { PageTitle } from "@/components/layout/PageTitle";
 import { GroupCard } from "@/components/shared/GroupCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
+import { JoinGroupDialog } from "@/components/groups/JoinGroupDialog";
 import { useGroups } from "@/hooks/useGroups";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
@@ -29,7 +30,12 @@ export default function Dashboard() {
       <PageContainer>
         <PageTitle
           subtitle="Alle deine Gruppenarbeiten auf einen Blick"
-          action={<CreateGroupDialog />}
+          action={
+            <div className="flex gap-2">
+              <JoinGroupDialog />
+              <CreateGroupDialog />
+            </div>
+          }
         >
           Meine Gruppen
         </PageTitle>
