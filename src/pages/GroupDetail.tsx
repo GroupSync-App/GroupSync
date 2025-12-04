@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Copy, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -7,35 +8,102 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-
-// Placeholder data for UI demonstration
-const mockGroup = {
-  id: "1",
-  title: "Webentwicklung Projekt",
-  subject: "Informatik",
-  description: "Gemeinsames Projekt zur Entwicklung einer React-Webanwendung. Wir bauen eine Task-Management-App mit modernem UI/UX Design.",
-  deadline: "15. Januar 2025",
-  maxMembers: 5,
-  inviteCode: "ABC123",
-  members: [
-    { id: "1", name: "Max Mustermann", role: "organiser", studyProgram: "Informatik" },
-    { id: "2", name: "Anna Schmidt", role: "member", studyProgram: "Medieninformatik" },
-    { id: "3", name: "Tim Weber", role: "member", studyProgram: "Informatik" },
-  ],
-};
+import { useGroups, GroupWithMembers } from "@/hooks/useGroups";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export default function GroupDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const group = mockGroup; // Will be replaced with real data in Phase 4
+  const { getGroupById, leaveGroup } = useGroups();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [group, setGroup] = useState<GroupWithMembers | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const getInitials = (name: string) => {
+  useEffect(() => {
+    const fetchGroup = async () => {
+      if (!id) return;
+      const data = await getGroupById(id);
+      setGroup(data);
+      setLoading(false);
+    };
+    fetchGroup();
+  }, [id]);
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "?";
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
-      .toUpperCase();
+      .toUpperCase()
+      .slice(0, 2);
   };
+
+  const copyInviteCode = () => {
+    if (!group) return;
+    navigator.clipboard.writeText(group.invite_code);
+    toast({
+      title: "Kopiert!",
+      description: "Einladungscode in die Zwischenablage kopiert.",
+    });
+  };
+
+  const handleLeave = async () => {
+    if (!id) return;
+    const { error } = await leaveGroup(id);
+    if (!error) {
+      navigate("/dashboard");
+    }
+  };
+
+  const formatDeadline = (deadline: string | null) => {
+    if (!deadline) return null;
+    try {
+      return format(new Date(deadline), "d. MMMM yyyy", { locale: de });
+    } catch {
+      return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <PageContainer size="md" className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </PageContainer>
+      </AppLayout>
+    );
+  }
+
+  if (!group) {
+    return (
+      <AppLayout>
+        <PageContainer size="md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle>Gruppe nicht gefunden</CardTitle>
+              <CardDescription>
+                Diese Gruppe existiert nicht oder du hast keinen Zugriff.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" onClick={() => navigate("/dashboard")}>
+                Zum Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </PageContainer>
+      </AppLayout>
+    );
+  }
+
+  const isOwner = group.members.some(
+    (m) => m.user_id === user?.id && m.role === "owner"
+  );
 
   return (
     <AppLayout>
@@ -53,9 +121,11 @@ export default function GroupDetail() {
           {/* Header */}
           <div>
             <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-              {group.title}
+              {group.name}
             </h1>
-            <p className="text-muted-foreground mt-1">{group.subject}</p>
+            {group.subject && (
+              <p className="text-muted-foreground mt-1">{group.subject}</p>
+            )}
           </div>
 
           {/* Meta Info */}
@@ -63,24 +133,28 @@ export default function GroupDetail() {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-4 w-4" />
               <span>
-                {group.members.length}/{group.maxMembers} Mitglieder
+                {group.memberCount}/{group.max_members} Mitglieder
               </span>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Deadline: {group.deadline}</span>
-            </div>
+            {group.deadline && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>Deadline: {formatDeadline(group.deadline)}</span>
+              </div>
+            )}
           </div>
 
           {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Beschreibung</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{group.description}</p>
-            </CardContent>
-          </Card>
+          {group.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Beschreibung</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{group.description}</p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Invite Code */}
           <Card>
@@ -93,9 +167,9 @@ export default function GroupDetail() {
             <CardContent>
               <div className="flex items-center gap-2">
                 <code className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">
-                  {group.inviteCode}
+                  {group.invite_code}
                 </code>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={copyInviteCode}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
@@ -114,25 +188,43 @@ export default function GroupDetail() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                        {getInitials(member.name)}
+                        {getInitials(member.profile?.display_name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">
-                        {member.name}
+                        {member.profile?.display_name || "Unbekannt"}
                       </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {member.studyProgram}
-                      </p>
+                      {member.profile?.study_program && (
+                        <p className="text-sm text-muted-foreground truncate">
+                          {member.profile.study_program}
+                        </p>
+                      )}
                     </div>
-                    {member.role === "organiser" && (
-                      <Badge variant="secondary">Organiser</Badge>
+                    {member.role === "owner" && (
+                      <Badge variant="secondary">Ersteller</Badge>
                     )}
                   </div>
                 </div>
               ))}
             </CardContent>
           </Card>
+
+          {/* Leave Group */}
+          {!isOwner && (
+            <Card>
+              <CardContent className="pt-6">
+                <Button
+                  variant="outline"
+                  className="w-full text-destructive hover:text-destructive"
+                  onClick={handleLeave}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Gruppe verlassen
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </PageContainer>
     </AppLayout>
