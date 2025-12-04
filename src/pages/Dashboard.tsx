@@ -1,14 +1,15 @@
-import { Users } from "lucide-react";
+import { Users, CheckSquare, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageTitle } from "@/components/layout/PageTitle";
 import { GroupCard } from "@/components/shared/GroupCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 import { JoinGroupDialog } from "@/components/groups/JoinGroupDialog";
 import { useGroups } from "@/hooks/useGroups";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { StatsCard } from "@/components/dashboard/StatsCard";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -28,50 +29,81 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <PageContainer>
-        <PageTitle
-          subtitle="Alle deine Gruppenarbeiten auf einen Blick"
-          action={
+        {/* Stats Cards */}
+        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+          <StatsCard
+            icon={Users}
+            value={loading ? "-" : groups.length}
+            label="Aktive Gruppen"
+            iconBgColor="bg-blue-100 dark:bg-blue-900/30"
+            iconColor="text-blue-600 dark:text-blue-400"
+          />
+          <StatsCard
+            icon={CheckSquare}
+            value="-"
+            label="Offene Aufgaben"
+            iconBgColor="bg-emerald-100 dark:bg-emerald-900/30"
+            iconColor="text-emerald-600 dark:text-emerald-400"
+          />
+          <StatsCard
+            icon={Calendar}
+            value="-"
+            label="Anstehende Termine"
+            iconBgColor="bg-emerald-100 dark:bg-emerald-900/30"
+            iconColor="text-emerald-600 dark:text-emerald-400"
+          />
+        </div>
+
+        {/* Groups Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Deine Gruppen</h2>
+              <p className="text-sm text-muted-foreground">Verwalte deine Gruppenprojekte und Aufgaben</p>
+            </div>
             <div className="flex gap-2">
               <JoinGroupDialog />
               <CreateGroupDialog />
             </div>
-          }
-        >
-          Meine Gruppen
-        </PageTitle>
+          </div>
 
-        {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-lg border p-4 space-y-3">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-full" />
+          {loading ? (
+            <Card className="p-6">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-lg border p-4 space-y-3">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : groups.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="Noch keine Gruppen"
-            description="Erstelle deine erste Gruppe oder tritt einer bestehenden bei."
-            action={<CreateGroupDialog />}
-          />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {groups.map((group) => (
-              <GroupCard
-                key={group.id}
-                title={group.name}
-                subject={group.subject || undefined}
-                deadline={formatDeadline(group.deadline)}
-                memberCount={group.memberCount}
-                maxMembers={group.max_members}
-                onClick={() => navigate(`/groups/${group.id}`)}
+            </Card>
+          ) : groups.length === 0 ? (
+            <Card className="p-6">
+              <EmptyState
+                icon={Users}
+                title="Keine Gruppen vorhanden"
+                description="Erstelle deine erste Gruppe und starte die Zusammenarbeit"
+                action={<CreateGroupDialog />}
               />
-            ))}
-          </div>
-        )}
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {groups.map((group) => (
+                <GroupCard
+                  key={group.id}
+                  title={group.name}
+                  subject={group.subject || undefined}
+                  deadline={formatDeadline(group.deadline)}
+                  memberCount={group.memberCount}
+                  maxMembers={group.max_members}
+                  onClick={() => navigate(`/groups/${group.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </PageContainer>
     </AppLayout>
   );
