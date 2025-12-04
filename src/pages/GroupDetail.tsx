@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut } from "lucide-react";
+import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useGroups, GroupWithMembers } from "@/hooks/useGroups";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +28,7 @@ import { de } from "date-fns/locale";
 export default function GroupDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getGroupById, leaveGroup } = useGroups();
+  const { getGroupById, leaveGroup, deleteGroup } = useGroups();
   const { user } = useAuth();
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
@@ -55,6 +66,14 @@ export default function GroupDetail() {
   const handleLeave = async () => {
     if (!id) return;
     const { error } = await leaveGroup(id);
+    if (!error) {
+      navigate("/dashboard");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    const { error } = await deleteGroup(id);
     if (!error) {
       navigate("/dashboard");
     }
@@ -210,8 +229,8 @@ export default function GroupDetail() {
             </CardContent>
           </Card>
 
-          {/* Leave Group */}
-          {!isOwner && (
+          {/* Leave/Delete Group */}
+          {!isOwner ? (
             <Card>
               <CardContent className="pt-6">
                 <Button
@@ -222,6 +241,40 @@ export default function GroupDetail() {
                   <LogOut className="h-4 w-4 mr-2" />
                   Gruppe verlassen
                 </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Gruppe löschen
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Gruppe löschen?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Diese Aktion kann nicht rückgängig gemacht werden. Die Gruppe 
+                        "{group.name}" und alle Mitgliedschaften werden dauerhaft gelöscht.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Löschen
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           )}

@@ -334,12 +334,50 @@ export function useGroups() {
     fetchGroups();
   }, [user]);
 
+  const deleteGroup = async (groupId: string) => {
+    if (!user) {
+      toast({
+        title: "Fehler",
+        description: "Du musst angemeldet sein.",
+        variant: "destructive",
+      });
+      return { error: new Error("Not authenticated") };
+    }
+
+    try {
+      const { error } = await supabase
+        .from("groups")
+        .delete()
+        .eq("id", groupId)
+        .eq("created_by", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gruppe gelöscht",
+        description: "Die Gruppe wurde erfolgreich gelöscht.",
+      });
+
+      await fetchGroups();
+      return { error: null };
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      toast({
+        title: "Fehler",
+        description: "Die Gruppe konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   return {
     groups,
     loading,
     createGroup,
     joinGroup,
     leaveGroup,
+    deleteGroup,
     getGroupByInviteCode,
     getGroupById,
     refetch: fetchGroups,
