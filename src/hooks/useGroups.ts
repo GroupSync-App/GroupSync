@@ -1,0 +1,347 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  subject: string | null;
+  invite_code: string;
+  max_members: number;
+  deadline: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GroupMember {
+  id: string;
+  group_id: string;
+  user_id: string;
+  role: "owner" | "member";
+  joined_at: string;
+  profile?: {
+    display_name: string | null;
+    study_program: string | null;
+    avatar_url: string | null;
+  };
+}
+
+export interface GroupWithMembers extends Group {
+  members: GroupMember[];
+  memberCount: number;
+}
+
+export function useGroups() {
+  const [groups, setGroups] = useState<GroupWithMembers[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchGroups = async () => {
+    if (!user) {
+      setGroups([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Get groups where user is a member
+      const { data: memberData, error: memberError } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", user.id);
+
+      if (memberError) throw memberError;
+
+      if (!memberData || memberData.length === 0) {
+        setGroups([]);
+        setLoading(false);
+        return;
+      }
+
+      const groupIds = memberData.map((m) => m.group_id);
+
+      // Get group details
+      const { data: groupsData, error: groupsError } = await supabase
+        .from("groups")
+        .select("*")
+        .in("id", groupIds);
+
+      if (groupsError) throw groupsError;
+
+      // Get member counts for each group
+      const groupsWithMembers: GroupWithMembers[] = await Promise.all(
+        (groupsData || []).map(async (group) => {
+          const { data: members, error: membersError } = await supabase
+            .from("group_members")
+            .select(`
+              *,
+              profile:profiles(display_name, study_program, avatar_url)
+            `)
+            .eq("group_id", group.id);
+
+          if (membersError) {
+            console.error("Error fetching members:", membersError);
+            return { ...group, members: [], memberCount: 0 };
+          }
+
+          const typedMembers: GroupMember[] = (members || []).map((m) => ({
+            ...m,
+            role: m.role as "owner" | "member",
+            profile: m.profile as GroupMember["profile"],
+          }));
+
+          return {
+            ...group,
+            members: typedMembers,
+            memberCount: typedMembers.length,
+          };
+        })
+      );
+
+      setGroups(groupsWithMembers);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      toast({
+        title: "Fehler",
+        description: "Gruppen konnten nicht geladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createGroup = async (data: {
+    name: string;
+    description?: string;
+    subject?: string;
+    max_members?: number;
+    deadline?: string;
+  }) => {
+    if (!user) return { error: new Error("Not authenticated") };
+
+    try {
+      // Create the group
+      const { data: newGroup, error: groupError } = await supabase
+        .from("groups")
+        .insert({
+          name: data.name,
+          description: data.description || null,
+          subject: data.subject || null,
+          max_members: data.max_members || 5,
+          deadline: data.deadline || null,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (groupError) throw groupError;
+
+      // Add creator as owner
+      const { error: memberError } = await supabase
+        .from("group_members")
+        .insert({
+          group_id: newGroup.id,
+          user_id: user.id,
+          role: "owner",
+        });
+
+      if (memberError) throw memberError;
+
+      toast({
+        title: "Gruppe erstellt",
+        description: `"${data.name}" wurde erfolgreich erstellt.`,
+      });
+
+      await fetchGroups();
+      return { data: newGroup, error: null };
+    } catch (error) {
+      console.error("Error creating group:", error);
+      toast({
+        title: "Fehler",
+        description: "Gruppe konnte nicht erstellt werden.",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const joinGroup = async (inviteCode: string) => {
+    if (!user) return { error: new Error("Not authenticated") };
+
+    try {
+      // Find group by invite code
+      const { data: group, error: groupError } = await supabase
+        .from("groups")
+        .select("*")
+        .eq("invite_code", inviteCode.toUpperCase())
+        .maybeSingle();
+
+      if (groupError) throw groupError;
+      if (!group) {
+        toast({
+          title: "Gruppe nicht gefunden",
+          description: "Der Einladungscode ist ungültig.",
+          variant: "destructive",
+        });
+        return { error: new Error("Group not found") };
+      }
+
+      // Check if already a member
+      const { data: existingMember } = await supabase
+        .from("group_members")
+        .select("id")
+        .eq("group_id", group.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingMember) {
+        toast({
+          title: "Bereits Mitglied",
+          description: "Du bist bereits Mitglied dieser Gruppe.",
+          variant: "destructive",
+        });
+        return { error: new Error("Already a member") };
+      }
+
+      // Check member count
+      const { count } = await supabase
+        .from("group_members")
+        .select("*", { count: "exact", head: true })
+        .eq("group_id", group.id);
+
+      if (count && count >= group.max_members) {
+        toast({
+          title: "Gruppe voll",
+          description: "Diese Gruppe hat keine freien Plätze mehr.",
+          variant: "destructive",
+        });
+        return { error: new Error("Group is full") };
+      }
+
+      // Join group
+      const { error: joinError } = await supabase
+        .from("group_members")
+        .insert({
+          group_id: group.id,
+          user_id: user.id,
+          role: "member",
+        });
+
+      if (joinError) throw joinError;
+
+      toast({
+        title: "Beigetreten!",
+        description: `Du bist "${group.name}" beigetreten.`,
+      });
+
+      await fetchGroups();
+      return { data: group, error: null };
+    } catch (error) {
+      console.error("Error joining group:", error);
+      toast({
+        title: "Fehler",
+        description: "Beitritt fehlgeschlagen.",
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  const getGroupByInviteCode = async (inviteCode: string) => {
+    const { data, error } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("invite_code", inviteCode.toUpperCase())
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching group:", error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    // Get member count
+    const { count } = await supabase
+      .from("group_members")
+      .select("*", { count: "exact", head: true })
+      .eq("group_id", data.id);
+
+    return { ...data, memberCount: count || 0 };
+  };
+
+  const getGroupById = async (groupId: string) => {
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("id", groupId)
+      .maybeSingle();
+
+    if (groupError || !group) return null;
+
+    const { data: members } = await supabase
+      .from("group_members")
+      .select(`
+        *,
+        profile:profiles(display_name, study_program, avatar_url)
+      `)
+      .eq("group_id", groupId);
+
+    const typedMembers: GroupMember[] = (members || []).map((m) => ({
+      ...m,
+      role: m.role as "owner" | "member",
+      profile: m.profile as GroupMember["profile"],
+    }));
+
+    return {
+      ...group,
+      members: typedMembers,
+      memberCount: typedMembers.length,
+    } as GroupWithMembers;
+  };
+
+  const leaveGroup = async (groupId: string) => {
+    if (!user) return { error: new Error("Not authenticated") };
+
+    try {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gruppe verlassen",
+        description: "Du hast die Gruppe verlassen.",
+      });
+
+      await fetchGroups();
+      return { error: null };
+    } catch (error) {
+      console.error("Error leaving group:", error);
+      return { error };
+    }
+  };
+
+  useEffect(() => {
+    fetchGroups();
+  }, [user]);
+
+  return {
+    groups,
+    loading,
+    createGroup,
+    joinGroup,
+    leaveGroup,
+    getGroupByInviteCode,
+    getGroupById,
+    refetch: fetchGroups,
+  };
+}

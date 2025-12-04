@@ -1,6 +1,16 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Users, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -9,7 +19,18 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
   const location = useLocation();
+  const { user, profile, signOut } = useAuth();
   const isAuthPage = location.pathname === "/login";
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -22,6 +43,39 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
               </div>
               <span className="text-lg font-semibold text-foreground">GroupSync</span>
             </Link>
+
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                        {getInitials(profile?.display_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {profile?.display_name && (
+                        <p className="font-medium">{profile.display_name}</p>
+                      )}
+                      {user.email && (
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Abmelden
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </header>
       )}
