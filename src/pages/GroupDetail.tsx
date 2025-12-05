@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2 } from "lucide-react";
+import { useTasks } from "@/hooks/useTasks";
+import { TaskList } from "@/components/tasks/TaskList";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,7 @@ export default function GroupDetail() {
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
+  const { tasks, loading: tasksLoading, error: tasksError } = useTasks(id);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -174,6 +177,9 @@ export default function GroupDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Tasks */}
+          <TaskList tasks={tasks} loading={tasksLoading} error={tasksError} />
 
           {/* Invite Code */}
           <Card>
