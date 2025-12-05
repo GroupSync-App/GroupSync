@@ -8,14 +8,35 @@ import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 import { JoinGroupDialog } from "@/components/groups/JoinGroupDialog";
 import { useGroups } from "@/hooks/useGroups";
 import { useTasks } from "@/hooks/useTasks";
+import { useAppointments } from "@/hooks/useAppointments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointments";
+import { UpcomingTasks } from "@/components/dashboard/UpcomingTasks";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { groups, loading } = useGroups();
-  const { openTasksCount, loading: tasksLoading, error: tasksError } = useTasks();
+  const { tasks, openTasksCount, loading: tasksLoading, error: tasksError } = useTasks();
+  const { upcomingAppointments, loading: appointmentsLoading } = useAppointments();
+
+  const getGroupName = (groupId: string) => {
+    return groups.find(g => g.id === groupId)?.name || "Unbekannte Gruppe";
+  };
+
+  // Filter and sort tasks for display
+  const displayTasks = tasks
+    .filter(t => t.status !== "completed")
+    .sort((a, b) => {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    })
+    .slice(0, 5);
+
+  const displayAppointments = upcomingAppointments.slice(0, 5);
 
   return (
     <AppLayout>
@@ -38,10 +59,24 @@ export default function Dashboard() {
           />
           <StatsCard
             icon={Calendar}
-            value="-"
+            value={appointmentsLoading ? "-" : upcomingAppointments.length}
             label="Anstehende Termine"
-            iconBgColor="bg-emerald-100 dark:bg-emerald-900/30"
-            iconColor="text-emerald-600 dark:text-emerald-400"
+            iconBgColor="bg-amber-100 dark:bg-amber-900/30"
+            iconColor="text-amber-600 dark:text-amber-400"
+          />
+        </div>
+
+        {/* Upcoming Section */}
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
+          <UpcomingAppointments
+            appointments={displayAppointments}
+            loading={appointmentsLoading || loading}
+            getGroupName={getGroupName}
+          />
+          <UpcomingTasks
+            tasks={displayTasks}
+            loading={tasksLoading || loading}
+            getGroupName={getGroupName}
           />
         </div>
 
