@@ -35,7 +35,7 @@ export default function GroupDetail() {
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
-  const { tasks, loading: tasksLoading, error: tasksError, createTask, refetch: refetchTasks } = useTasks(id);
+  const { tasks, loading: tasksLoading, error: tasksError, createTask, updateTaskStatus, deleteTask, refetch: refetchTasks } = useTasks(id);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -191,6 +191,8 @@ export default function GroupDetail() {
               });
               refetchTasks();
             }}
+            onUpdateStatus={updateTaskStatus}
+            onDeleteTask={deleteTask}
           />
 
           {/* Invite Code */}
