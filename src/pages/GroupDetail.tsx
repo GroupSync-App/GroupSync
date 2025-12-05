@@ -5,6 +5,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
 import { TaskList } from "@/components/tasks/TaskList";
 import { AppointmentList } from "@/components/appointments/AppointmentList";
+import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -203,20 +205,49 @@ export default function GroupDetail() {
           />
 
           {/* Appointments */}
-          <AppointmentList
-            appointments={appointments}
-            loading={appointmentsLoading}
-            error={appointmentsError}
-            onCreateAppointment={async (appointmentData) => {
-              if (!id) return;
-              await createAppointment({
-                ...appointmentData,
-                group_id: id,
-              });
-              refetchAppointments();
-            }}
-            onDeleteAppointment={deleteAppointment}
-          />
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Termine</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Tabs defaultValue="calendar" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="calendar">Kalender</TabsTrigger>
+                  <TabsTrigger value="list">Liste</TabsTrigger>
+                </TabsList>
+                <TabsContent value="calendar" className="mt-0">
+                  <AppointmentCalendar
+                    appointments={appointments}
+                    onCreateAppointment={async (appointmentData) => {
+                      if (!id) return;
+                      await createAppointment({
+                        ...appointmentData,
+                        group_id: id,
+                      });
+                      refetchAppointments();
+                    }}
+                    onDeleteAppointment={deleteAppointment}
+                  />
+                </TabsContent>
+                <TabsContent value="list" className="mt-0">
+                  <AppointmentList
+                    appointments={appointments}
+                    loading={appointmentsLoading}
+                    error={appointmentsError}
+                    onCreateAppointment={async (appointmentData) => {
+                      if (!id) return;
+                      await createAppointment({
+                        ...appointmentData,
+                        group_id: id,
+                      });
+                      refetchAppointments();
+                    }}
+                    onDeleteAppointment={deleteAppointment}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
 
           {/* Invite Code */}
           <Card>
