@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createTaskSchema } from "@/lib/validationSchemas";
 
 export interface GroupMemberOption {
   user_id: string;
@@ -40,6 +41,7 @@ interface CreateTaskDialogProps {
 export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
@@ -48,16 +50,35 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    setErrors({});
+
+    const validation = createTaskSchema.safeParse({
+      title: title,
+      description: description || undefined,
+      priority,
+      due_date: dueDate || undefined,
+      assigned_to: assignedTo || undefined,
+    });
+
+    if (!validation.success) {
+      const fieldErrors: Record<string, string> = {};
+      validation.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
 
     setLoading(true);
     try {
       await onCreateTask({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        due_date: dueDate || undefined,
-        assigned_to: assignedTo || undefined,
+        title: validation.data.title,
+        description: validation.data.description,
+        priority: validation.data.priority,
+        due_date: validation.data.due_date,
+        assigned_to: validation.data.assigned_to,
       });
       setOpen(false);
       resetForm();
@@ -72,6 +93,7 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
     setPriority("medium");
     setDueDate("");
     setAssignedTo("");
+    setErrors({});
   };
 
   return (
@@ -98,8 +120,10 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Aufgabentitel eingeben..."
+                maxLength={200}
                 required
               />
+              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Beschreibung</Label>
@@ -108,8 +132,10 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optionale Beschreibung..."
+                maxLength={1000}
                 rows={3}
               />
+              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
