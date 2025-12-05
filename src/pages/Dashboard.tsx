@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Users, CheckSquare, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -9,6 +10,8 @@ import { JoinGroupDialog } from "@/components/groups/JoinGroupDialog";
 import { useGroups } from "@/hooks/useGroups";
 import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -17,12 +20,36 @@ import { UpcomingTasks } from "@/components/dashboard/UpcomingTasks";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { groups, loading } = useGroups();
   const { tasks, openTasksCount, loading: tasksLoading, error: tasksError } = useTasks();
   const { upcomingAppointments, loading: appointmentsLoading } = useAppointments();
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const getGroupName = (groupId: string) => {
     return groups.find(g => g.id === groupId)?.name || "Unbekannte Gruppe";
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Guten Morgen";
+    if (hour < 18) return "Guten Tag";
+    return "Guten Abend";
   };
 
   // Filter and sort tasks for display
@@ -43,7 +70,9 @@ export default function Dashboard() {
       <PageContainer>
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {getGreeting()}{displayName ? `, ${displayName}` : ""}! 👋
+          </h1>
           <p className="text-muted-foreground">Dein Überblick über Gruppen, Aufgaben und Termine</p>
         </div>
 
