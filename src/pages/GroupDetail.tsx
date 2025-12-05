@@ -35,7 +35,7 @@ export default function GroupDetail() {
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
-  const { tasks, loading: tasksLoading, error: tasksError } = useTasks(id);
+  const { tasks, loading: tasksLoading, error: tasksError, createTask, refetch: refetchTasks } = useTasks(id);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -178,8 +178,20 @@ export default function GroupDetail() {
             </Card>
           )}
 
-          {/* Tasks */}
-          <TaskList tasks={tasks} loading={tasksLoading} error={tasksError} />
+{/* Tasks */}
+          <TaskList 
+            tasks={tasks} 
+            loading={tasksLoading} 
+            error={tasksError}
+            onCreateTask={async (taskData) => {
+              if (!id) return;
+              await createTask({
+                ...taskData,
+                group_id: id,
+              });
+              refetchTasks();
+            }}
+          />
 
           {/* Invite Code */}
           <Card>

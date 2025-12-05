@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Task } from "@/hooks/useTasks";
+import { CreateTaskDialog } from "./CreateTaskDialog";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -10,6 +11,12 @@ interface TaskListProps {
   tasks: Task[];
   loading: boolean;
   error: Error | null;
+  onCreateTask?: (task: {
+    title: string;
+    description?: string;
+    priority?: "low" | "medium" | "high";
+    due_date?: string;
+  }) => Promise<void>;
 }
 
 const priorityConfig = {
@@ -24,7 +31,7 @@ const statusConfig = {
   completed: { label: "Erledigt", icon: CheckCircle2, color: "text-emerald-500" },
 };
 
-export function TaskList({ tasks, loading, error }: TaskListProps) {
+export function TaskList({ tasks, loading, error, onCreateTask }: TaskListProps) {
   if (loading) {
     return (
       <Card>
@@ -69,9 +76,10 @@ export function TaskList({ tasks, loading, error }: TaskListProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">Aufgaben</CardTitle>
-          <div className="flex gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Circle className="h-3 w-3" /> {openTasks.length}
             </span>
@@ -81,6 +89,8 @@ export function TaskList({ tasks, loading, error }: TaskListProps) {
             <span className="flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-emerald-500" /> {completedTasks.length}
             </span>
+            </div>
+            {onCreateTask && <CreateTaskDialog onCreateTask={onCreateTask} />}
           </div>
         </div>
       </CardHeader>
