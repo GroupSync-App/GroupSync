@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 import { JoinGroupDialog } from "@/components/groups/JoinGroupDialog";
 import { useGroups } from "@/hooks/useGroups";
+import { useTasks } from "@/hooks/useTasks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -14,6 +15,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { groups, loading } = useGroups();
+  const { openTasksCount, loading: tasksLoading } = useTasks();
 
   return (
     <AppLayout>
@@ -29,7 +31,7 @@ export default function Dashboard() {
           />
           <StatsCard
             icon={CheckSquare}
-            value="-"
+            value={tasksLoading ? "-" : openTasksCount}
             label="Offene Aufgaben"
             iconBgColor="bg-emerald-100 dark:bg-emerald-900/30"
             iconColor="text-emerald-600 dark:text-emerald-400"
