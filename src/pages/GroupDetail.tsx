@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2, Clock, Vote } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
 import { TaskList } from "@/components/tasks/TaskList";
@@ -27,10 +27,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useGroups, GroupWithMembers } from "@/hooks/useGroups";
+import { usePolls } from "@/hooks/usePolls";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { CreatePollDialog } from "@/components/polls/CreatePollDialog";
+import { PollCard } from "@/components/polls/PollCard";
 
 export default function GroupDetail() {
   const { id } = useParams();
@@ -42,6 +45,7 @@ export default function GroupDetail() {
   const [loading, setLoading] = useState(true);
   const { tasks, loading: tasksLoading, error: tasksError, createTask, updateTaskStatus, deleteTask, refetch: refetchTasks } = useTasks(id);
   const { appointments, loading: appointmentsLoading, error: appointmentsError, createAppointment, deleteAppointment, refetch: refetchAppointments } = useAppointments(id);
+  const { polls, loading: pollsLoading, createPoll, vote, deletePoll } = usePolls(id);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -247,6 +251,48 @@ export default function GroupDetail() {
                   />
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Polls */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Vote className="h-4 w-4" />
+                  Umfragen
+                </CardTitle>
+                <CreatePollDialog
+                  onCreatePoll={async (pollData) => {
+                    if (!id) return;
+                    await createPoll({
+                      ...pollData,
+                      group_id: id,
+                    });
+                  }}
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pollsLoading ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : polls.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Noch keine Umfragen erstellt
+                </p>
+              ) : (
+                polls.map((poll) => (
+                  <PollCard
+                    key={poll.id}
+                    poll={poll}
+                    currentUserId={user?.id || ""}
+                    onVote={vote}
+                    onDelete={deletePoll}
+                  />
+                ))
+              )}
             </CardContent>
           </Card>
 
