@@ -270,6 +270,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_group_by_invite_code: {
+        Args: { _invite_code: string }
+        Returns: {
+          deadline: string
+          description: string
+          id: string
+          max_members: number
+          member_count: number
+          name: string
+          subject: string
+        }[]
+      }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
