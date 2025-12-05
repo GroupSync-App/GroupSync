@@ -183,6 +183,10 @@ export default function GroupDetail() {
             tasks={tasks} 
             loading={tasksLoading} 
             error={tasksError}
+            members={group.members.map(m => ({
+              user_id: m.user_id,
+              display_name: m.profile?.display_name || null,
+            }))}
             onCreateTask={async (taskData) => {
               if (!id) return;
               await createTask({

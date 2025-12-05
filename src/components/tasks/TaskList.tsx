@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, Circle, Clock, AlertCircle, Trash2, MoreVertical } from "lucide-react";
+import { CheckCircle2, Circle, Clock, AlertCircle, Trash2, MoreVertical, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Task } from "@/hooks/useTasks";
-import { CreateTaskDialog } from "./CreateTaskDialog";
+import { CreateTaskDialog, GroupMemberOption } from "./CreateTaskDialog";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -27,11 +27,13 @@ interface TaskListProps {
   tasks: Task[];
   loading: boolean;
   error: Error | null;
+  members?: GroupMemberOption[];
   onCreateTask?: (task: {
     title: string;
     description?: string;
     priority?: "low" | "medium" | "high";
     due_date?: string;
+    assigned_to?: string;
   }) => Promise<void>;
   onUpdateStatus?: (taskId: string, status: Task["status"]) => Promise<{ error: unknown }>;
   onDeleteTask?: (taskId: string) => Promise<{ error: unknown }>;
@@ -51,8 +53,14 @@ const statusConfig = {
 
 type StatusFilter = "all" | Task["status"];
 
-export function TaskList({ tasks, loading, error, onCreateTask, onUpdateStatus, onDeleteTask }: TaskListProps) {
+export function TaskList({ tasks, loading, error, members = [], onCreateTask, onUpdateStatus, onDeleteTask }: TaskListProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const getMemberName = (userId: string | null) => {
+    if (!userId) return null;
+    const member = members.find(m => m.user_id === userId);
+    return member?.display_name || "Unbekannt";
+  };
 
   const cycleStatus = async (task: Task) => {
     if (!onUpdateStatus) return;
@@ -142,7 +150,7 @@ export function TaskList({ tasks, loading, error, onCreateTask, onUpdateStatus, 
                 <SelectItem value="completed">Erledigt</SelectItem>
               </SelectContent>
             </Select>
-            {onCreateTask && <CreateTaskDialog onCreateTask={onCreateTask} />}
+            {onCreateTask && <CreateTaskDialog onCreateTask={onCreateTask} members={members} />}
           </div>
         </div>
       </CardHeader>
@@ -192,6 +200,12 @@ export function TaskList({ tasks, loading, error, onCreateTask, onUpdateStatus, 
                     {task.due_date && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Fällig: {format(new Date(task.due_date), "d. MMM yyyy", { locale: de })}
+                      </p>
+                    )}
+                    {task.assigned_to && getMemberName(task.assigned_to) && (
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {getMemberName(task.assigned_to)}
                       </p>
                     )}
                   </div>
