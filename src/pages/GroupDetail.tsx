@@ -249,26 +249,6 @@ export default function GroupDetail() {
             </CardContent>
           </Card>
 
-          {/* Invite Code */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Einladungscode</CardTitle>
-              <CardDescription>
-                Teile diesen Code, um neue Mitglieder einzuladen
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">
-                  {group.invite_code}
-                </code>
-                <Button variant="outline" size="icon" onClick={copyInviteCode}>
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Members */}
           <Card>
             <CardHeader>
@@ -300,6 +280,26 @@ export default function GroupDetail() {
                   </div>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Invite Code */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Einladungscode</CardTitle>
+              <CardDescription>
+                Teile diesen Code, um neue Mitglieder einzuladen
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">
+                  {group.invite_code}
+                </code>
+                <Button variant="outline" size="icon" onClick={copyInviteCode}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
