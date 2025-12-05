@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, CheckSquare, Calendar, ChevronDown } from "lucide-react";
+import { Users, CheckSquare, Calendar, ChevronDown, Vote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -37,13 +37,22 @@ interface Group {
   max_members: number;
 }
 
+interface Poll {
+  id: string;
+  title: string;
+  group_id: string;
+  ends_at: string | null;
+}
+
 interface MobileDashboardProps {
   groups: Group[];
   tasks: Task[];
   appointments: Appointment[];
+  polls?: Poll[];
   loading: boolean;
   tasksLoading: boolean;
   appointmentsLoading: boolean;
+  pollsLoading?: boolean;
   openTasksCount: number;
   getGroupName: (groupId: string) => string;
 }
@@ -123,9 +132,11 @@ export function MobileDashboard({
   groups,
   tasks,
   appointments,
+  polls = [],
   loading,
   tasksLoading,
   appointmentsLoading,
+  pollsLoading = false,
   openTasksCount,
   getGroupName,
 }: MobileDashboardProps) {
@@ -201,6 +212,20 @@ export function MobileDashboard({
       ))}
       {appointments.length > 2 && (
         <p className="text-xs text-muted-foreground/70">+ {appointments.length - 2} weitere</p>
+      )}
+    </div>
+  ) : null;
+
+  const pollsPreview = !pollsLoading && polls.length > 0 ? (
+    <div className="space-y-1.5">
+      {polls.slice(0, 2).map((poll) => (
+        <div key={poll.id} className="flex items-center gap-2 text-sm">
+          <span className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
+          <span className="truncate text-muted-foreground">{poll.title}</span>
+        </div>
+      ))}
+      {polls.length > 2 && (
+        <p className="text-xs text-muted-foreground/70">+ {polls.length - 2} weitere</p>
       )}
     </div>
   ) : null;
@@ -357,6 +382,50 @@ export function MobileDashboard({
                   <span>{formatDate(appointment.start_time)}</span>
                   {appointment.location && <span>📍 {appointment.location}</span>}
                 </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </ExpandableCard>
+
+      {/* Polls Section */}
+      <ExpandableCard
+        icon={Vote}
+        value={pollsLoading ? "-" : polls.length}
+        label="Aktive Umfragen"
+        iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+        iconColor="text-purple-600 dark:text-purple-400"
+        isOpen={openSection === "polls"}
+        onToggle={() => toggleSection("polls")}
+        preview={pollsPreview}
+      >
+        {pollsLoading ? (
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : polls.length === 0 ? (
+          <EmptyState
+            icon={Vote}
+            title="Keine Umfragen"
+            description="Erstelle Umfragen in deinen Gruppen"
+          />
+        ) : (
+          <div className="space-y-2">
+            {polls.slice(0, 5).map((poll) => (
+              <Card
+                key={poll.id}
+                className="p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => navigate(`/groups/${poll.group_id}`)}
+              >
+                <p className="font-medium text-sm">{poll.title}</p>
+                <p className="text-xs text-muted-foreground">{getGroupName(poll.group_id)}</p>
+                {poll.ends_at && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Endet: {new Date(poll.ends_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                )}
               </Card>
             ))}
           </div>
