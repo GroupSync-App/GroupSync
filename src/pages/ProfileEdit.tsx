@@ -20,11 +20,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { z } from "zod";
+
+const profileSchema = z.object({
+  display_name: z.string().max(100, "Name darf max. 100 Zeichen haben").optional(),
+  university: z.string().max(150, "Universität darf max. 150 Zeichen haben").optional(),
+  faculty: z.string().max(150, "Fakultät darf max. 150 Zeichen haben").optional(),
+  study_program: z.string().max(150, "Studiengang darf max. 150 Zeichen haben").optional(),
+  bio: z.string().max(1000, "Bio darf max. 1000 Zeichen haben").optional(),
+});
 
 const ProfileEdit = () => {
   const navigate = useNavigate();
   const { user, profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     display_name: "",
     university: "",
@@ -57,6 +67,27 @@ const ProfileEdit = () => {
     e.preventDefault();
     if (!user) return;
 
+    setErrors({});
+
+    const result = profileSchema.safeParse({
+      display_name: formData.display_name || undefined,
+      university: formData.university || undefined,
+      faculty: formData.faculty || undefined,
+      study_program: formData.study_program || undefined,
+      bio: formData.bio || undefined,
+    });
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase
@@ -78,7 +109,6 @@ const ProfileEdit = () => {
 
     if (error) {
       toast.error("Fehler beim Speichern des Profils");
-      console.error(error);
     } else {
       toast.success("Profil erfolgreich aktualisiert");
       await refreshProfile();
@@ -114,7 +144,9 @@ const ProfileEdit = () => {
                     setFormData({ ...formData, display_name: e.target.value })
                   }
                   placeholder="Max Mustermann"
+                  maxLength={100}
                 />
+                {errors.display_name && <p className="text-xs text-destructive">{errors.display_name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -126,7 +158,9 @@ const ProfileEdit = () => {
                     setFormData({ ...formData, university: e.target.value })
                   }
                   placeholder="TU München"
+                  maxLength={150}
                 />
+                {errors.university && <p className="text-xs text-destructive">{errors.university}</p>}
               </div>
 
               <div className="space-y-2">
@@ -138,7 +172,9 @@ const ProfileEdit = () => {
                     setFormData({ ...formData, faculty: e.target.value })
                   }
                   placeholder="Informatik"
+                  maxLength={150}
                 />
+                {errors.faculty && <p className="text-xs text-destructive">{errors.faculty}</p>}
               </div>
 
               <div className="space-y-2">
@@ -150,7 +186,9 @@ const ProfileEdit = () => {
                     setFormData({ ...formData, study_program: e.target.value })
                   }
                   placeholder="Bachelor Informatik"
+                  maxLength={150}
                 />
+                {errors.study_program && <p className="text-xs text-destructive">{errors.study_program}</p>}
               </div>
 
               <div className="space-y-2">
@@ -207,8 +245,10 @@ const ProfileEdit = () => {
                   setFormData({ ...formData, bio: e.target.value })
                 }
                 placeholder="Erzähle etwas über dich und deine Interessen..."
+                maxLength={1000}
                 rows={4}
               />
+              {errors.bio && <p className="text-xs text-destructive">{errors.bio}</p>}
             </div>
 
             <div className="space-y-2">

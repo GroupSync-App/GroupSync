@@ -21,6 +21,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGroups } from "@/hooks/useGroups";
+import { z } from "zod";
+
+const groupSchema = z.object({
+  name: z.string().trim().min(1, "Name ist erforderlich").max(100, "Name darf max. 100 Zeichen haben"),
+  description: z.string().max(1000, "Beschreibung darf max. 1000 Zeichen haben").optional(),
+  subject: z.string().max(50).optional(),
+  max_members: z.string(),
+  deadline: z.string().optional(),
+});
 
 const subjects = [
   "Informatik",
@@ -43,6 +52,7 @@ const subjects = [
 export function CreateGroupDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -54,7 +64,19 @@ export function CreateGroupDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    setErrors({});
+
+    const result = groupSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
 
     setLoading(true);
     const { error } = await createGroup({
@@ -76,6 +98,7 @@ export function CreateGroupDialog() {
         max_members: "5",
         deadline: "",
       });
+      setErrors({});
     }
   };
 
@@ -105,8 +128,10 @@ export function CreateGroupDialog() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
+                maxLength={100}
                 required
               />
+              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Fachbereich</Label>
@@ -137,8 +162,10 @@ export function CreateGroupDialog() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+                maxLength={1000}
                 rows={3}
               />
+              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
