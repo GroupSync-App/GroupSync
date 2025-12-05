@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointments";
 import { UpcomingTasks } from "@/components/dashboard/UpcomingTasks";
+import { ActivePolls } from "@/components/dashboard/ActivePolls";
 import { MobileDashboard } from "@/components/dashboard/MobileDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -159,7 +160,7 @@ export default function Dashboard() {
             </div>
 
             {/* Upcoming Section */}
-            <div className="grid gap-4 md:grid-cols-2 mb-8">
+            <div className="grid gap-4 md:grid-cols-3 mb-8">
               <UpcomingAppointments
                 appointments={displayAppointments}
                 loading={appointmentsLoading || loading}
@@ -168,6 +169,11 @@ export default function Dashboard() {
               <UpcomingTasks
                 tasks={displayTasks}
                 loading={tasksLoading || loading}
+                getGroupName={getGroupName}
+              />
+              <ActivePolls
+                polls={activePolls}
+                loading={pollsLoading || loading}
                 getGroupName={getGroupName}
               />
             </div>
