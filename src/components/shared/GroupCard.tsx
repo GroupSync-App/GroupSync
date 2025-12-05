@@ -64,12 +64,12 @@ export function GroupCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300 hover:shadow-medium hover:-translate-y-1",
+        "overflow-hidden transition-all duration-300 hover:shadow-medium hover:-translate-y-1 h-full flex flex-col",
         className
       )}
     >
-      <div className={cn("h-2 bg-gradient-to-r", gradientClass)} />
-      <div className="p-4">
+      <div className={cn("h-2 bg-gradient-to-r shrink-0", gradientClass)} />
+      <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="text-base font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors">
             {title}
@@ -97,13 +97,15 @@ export function GroupCard({
             </div>
           )}
         </div>
-        <Button 
-          variant="ghost" 
-          className="w-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 text-primary"
-          onClick={onClick}
-        >
-          Gruppe öffnen
-        </Button>
+        <div className="mt-auto">
+          <Button 
+            variant="ghost" 
+            className="w-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 text-primary"
+            onClick={onClick}
+          >
+            Gruppe öffnen
+          </Button>
+        </div>
       </div>
     </Card>
   );
