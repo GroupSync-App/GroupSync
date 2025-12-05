@@ -72,13 +72,20 @@ function ExpandableCard({
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
       <Card className={cn(
-        "transition-all duration-200",
-        isOpen && "ring-2 ring-primary/20"
+        "transition-all duration-300 ease-out overflow-hidden",
+        isOpen && "ring-2 ring-primary/20 shadow-lg"
       )}>
         <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-5">
+          <div className={cn(
+            "flex items-center justify-between p-5 transition-colors duration-200",
+            isOpen && "bg-muted/30"
+          )}>
             <div className="flex items-center gap-4">
-              <div className={cn("flex h-14 w-14 items-center justify-center rounded-full", iconBgColor)}>
+              <div className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-full transition-transform duration-300",
+                iconBgColor,
+                isOpen && "scale-110"
+              )}>
                 <Icon className={cn("h-7 w-7", iconColor)} />
               </div>
               <div className="text-left">
@@ -87,12 +94,12 @@ function ExpandableCard({
               </div>
             </div>
             <ChevronDown className={cn(
-              "h-5 w-5 text-muted-foreground transition-transform duration-200",
+              "h-5 w-5 text-muted-foreground transition-transform duration-300 ease-out",
               isOpen && "rotate-180"
             )} />
           </div>
         </CollapsibleTrigger>
-        <CollapsibleContent>
+        <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
           <div className="px-5 pb-5 pt-0">
             {children}
           </div>
