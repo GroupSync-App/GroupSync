@@ -77,30 +77,30 @@ function ExpandableCard({
       )}>
         <CollapsibleTrigger className="w-full">
           <div className={cn(
-            "flex items-center justify-between p-5 transition-colors duration-200",
+            "flex items-center justify-between p-6 min-h-[100px] transition-colors duration-200",
             isOpen && "bg-muted/30"
           )}>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <div className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-full transition-transform duration-300",
+                "flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-300",
                 iconBgColor,
                 isOpen && "scale-110"
               )}>
-                <Icon className={cn("h-7 w-7", iconColor)} />
+                <Icon className={cn("h-8 w-8", iconColor)} />
               </div>
               <div className="text-left">
-                <p className="text-3xl font-bold text-foreground">{value}</p>
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-4xl font-bold text-foreground">{value}</p>
+                <p className="text-base text-muted-foreground">{label}</p>
               </div>
             </div>
             <ChevronDown className={cn(
-              "h-5 w-5 text-muted-foreground transition-transform duration-300 ease-out",
+              "h-6 w-6 text-muted-foreground transition-transform duration-300 ease-out",
               isOpen && "rotate-180"
             )} />
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-          <div className="px-5 pb-5 pt-0">
+          <div className="px-6 pb-6 pt-0">
             {children}
           </div>
         </CollapsibleContent>
