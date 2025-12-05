@@ -178,7 +178,7 @@ export function useGroups() {
       const { data: group, error: groupError } = await supabase
         .from("groups")
         .select("*")
-        .eq("invite_code", inviteCode.toUpperCase())
+        .eq("invite_code", inviteCode.toLowerCase())
         .maybeSingle();
 
       if (groupError) throw groupError;
@@ -256,7 +256,7 @@ export function useGroups() {
     const { data, error } = await supabase
       .from("groups")
       .select("*")
-      .eq("invite_code", inviteCode.toUpperCase())
+      .eq("invite_code", inviteCode.toLowerCase())
       .maybeSingle();
 
     if (error) {
