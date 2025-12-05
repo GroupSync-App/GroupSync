@@ -41,6 +41,12 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <PageContainer>
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Dein Überblick über Gruppen, Aufgaben und Termine</p>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid gap-4 sm:grid-cols-3 mb-8">
           <StatsCard
