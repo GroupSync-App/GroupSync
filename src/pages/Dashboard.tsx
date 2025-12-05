@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, CheckSquare, Calendar } from "lucide-react";
+import { Users, CheckSquare, Calendar, Vote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
@@ -12,6 +12,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Poll } from "@/hooks/usePolls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { StatsCard } from "@/components/dashboard/StatsCard";
@@ -27,7 +28,38 @@ export default function Dashboard() {
   const { tasks, openTasksCount, loading: tasksLoading, error: tasksError } = useTasks();
   const { upcomingAppointments, loading: appointmentsLoading } = useAppointments();
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [activePolls, setActivePolls] = useState<Poll[]>([]);
+  const [pollsLoading, setPollsLoading] = useState(true);
   const isMobile = useIsMobile();
+
+  // Fetch active polls across all groups
+  useEffect(() => {
+    const fetchPolls = async () => {
+      if (!user || groups.length === 0) {
+        setPollsLoading(false);
+        return;
+      }
+
+      try {
+        const groupIds = groups.map(g => g.id);
+        const { data: pollsData } = await supabase
+          .from("polls")
+          .select("*")
+          .in("group_id", groupIds)
+          .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`);
+
+        setActivePolls((pollsData as Poll[]) || []);
+      } catch (err) {
+        console.error("Error fetching polls:", err);
+      } finally {
+        setPollsLoading(false);
+      }
+    };
+    
+    if (!loading) {
+      fetchPolls();
+    }
+  }, [user, groups, loading]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -84,16 +116,18 @@ export default function Dashboard() {
             groups={groups}
             tasks={displayTasks}
             appointments={displayAppointments}
+            polls={activePolls}
             loading={loading}
             tasksLoading={tasksLoading}
             appointmentsLoading={appointmentsLoading}
+            pollsLoading={pollsLoading}
             openTasksCount={openTasksCount}
             getGroupName={getGroupName}
           />
         ) : (
           <>
             {/* Stats Cards */}
-            <div className="grid gap-4 sm:grid-cols-3 mb-8">
+            <div className="grid gap-4 sm:grid-cols-4 mb-8">
               <StatsCard
                 icon={Users}
                 value={loading ? "-" : groups.length}
@@ -114,6 +148,13 @@ export default function Dashboard() {
                 label="Anstehende Termine"
                 iconBgColor="bg-amber-100 dark:bg-amber-900/30"
                 iconColor="text-amber-600 dark:text-amber-400"
+              />
+              <StatsCard
+                icon={Vote}
+                value={pollsLoading ? "-" : activePolls.length}
+                label="Aktive Umfragen"
+                iconBgColor="bg-purple-100 dark:bg-purple-900/30"
+                iconColor="text-purple-600 dark:text-purple-400"
               />
             </div>
 
