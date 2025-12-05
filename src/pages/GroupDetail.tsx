@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2 } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
+import { useAppointments } from "@/hooks/useAppointments";
 import { TaskList } from "@/components/tasks/TaskList";
+import { AppointmentList } from "@/components/appointments/AppointmentList";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,7 @@ export default function GroupDetail() {
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
   const { tasks, loading: tasksLoading, error: tasksError, createTask, updateTaskStatus, deleteTask, refetch: refetchTasks } = useTasks(id);
+  const { appointments, loading: appointmentsLoading, error: appointmentsError, createAppointment, deleteAppointment, refetch: refetchAppointments } = useAppointments(id);
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -197,6 +200,22 @@ export default function GroupDetail() {
             }}
             onUpdateStatus={updateTaskStatus}
             onDeleteTask={deleteTask}
+          />
+
+          {/* Appointments */}
+          <AppointmentList
+            appointments={appointments}
+            loading={appointmentsLoading}
+            error={appointmentsError}
+            onCreateAppointment={async (appointmentData) => {
+              if (!id) return;
+              await createAppointment({
+                ...appointmentData,
+                group_id: id,
+              });
+              refetchAppointments();
+            }}
+            onDeleteAppointment={deleteAppointment}
           />
 
           {/* Invite Code */}
