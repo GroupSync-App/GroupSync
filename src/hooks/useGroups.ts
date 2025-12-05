@@ -26,7 +26,6 @@ export interface GroupMember {
     display_name: string | null;
     study_program: string | null;
     avatar_url: string | null;
-    availability: Record<string, string[]> | null;
   };
 }
 
@@ -80,7 +79,7 @@ export function useGroups() {
             .from("group_members")
             .select(`
               *,
-              profile:profiles(display_name, study_program, avatar_url, availability)
+              profile:profiles(display_name, study_program, avatar_url)
             `)
             .eq("group_id", group.id);
 
@@ -289,7 +288,7 @@ export function useGroups() {
       .from("group_members")
       .select(`
         *,
-        profile:profiles(display_name, study_program, avatar_url, availability)
+        profile:profiles(display_name, study_program, avatar_url)
       `)
       .eq("group_id", groupId);
 
