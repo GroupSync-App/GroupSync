@@ -191,7 +191,7 @@ export default function Dashboard() {
             </div>
 
             {/* Upcoming Section */}
-            <div className="grid gap-4 md:grid-cols-3 mb-8">
+            <div className="grid gap-4 md:grid-cols-2 mb-4">
               <UpcomingAppointments
                 appointments={displayAppointments}
                 loading={appointmentsLoading || loading}
@@ -202,6 +202,10 @@ export default function Dashboard() {
                 loading={tasksLoading || loading}
                 getGroupName={getGroupName}
               />
+            </div>
+
+            {/* Active Polls - Full Width */}
+            <div className="mb-8">
               <ActivePolls
                 polls={activePolls}
                 loading={pollsLoading || loading}
