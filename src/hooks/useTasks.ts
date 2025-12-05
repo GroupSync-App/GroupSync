@@ -20,6 +20,7 @@ export interface Task {
 export function useTasks(groupId?: string) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -27,23 +28,27 @@ export function useTasks(groupId?: string) {
     if (!user) {
       setTasks([]);
       setLoading(false);
+      setError(null);
       return;
     }
 
     try {
+      setError(null);
       let query = supabase.from("tasks").select("*");
       
       if (groupId) {
         query = query.eq("group_id", groupId);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data, error: fetchError } = await query.order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
       setTasks((data || []) as Task[]);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+      setError(err as Error);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -144,6 +149,7 @@ export function useTasks(groupId?: string) {
   return {
     tasks,
     loading,
+    error,
     openTasksCount,
     inProgressCount,
     completedCount,
