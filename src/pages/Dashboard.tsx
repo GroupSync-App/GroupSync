@@ -33,30 +33,61 @@ export default function Dashboard() {
   const [pollsLoading, setPollsLoading] = useState(true);
   const isMobile = useIsMobile();
 
-  // Fetch active polls across all groups
+  // Fetch active polls across all groups with options and votes
+  const fetchPolls = async () => {
+    if (!user || groups.length === 0) {
+      setPollsLoading(false);
+      return;
+    }
+
+    try {
+      const groupIds = groups.map(g => g.id);
+      const { data: pollsData } = await supabase
+        .from("polls")
+        .select("*")
+        .in("group_id", groupIds)
+        .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`);
+
+      // Fetch options and votes for each poll
+      const pollsWithDetails = await Promise.all(
+        (pollsData || []).map(async (poll) => {
+          const { data: optionsData } = await supabase
+            .from("poll_options")
+            .select("*")
+            .eq("poll_id", poll.id);
+
+          const { data: votesData } = await supabase
+            .from("poll_votes")
+            .select("*")
+            .eq("poll_id", poll.id);
+
+          const optionsWithCounts = (optionsData || []).map((option) => ({
+            ...option,
+            vote_count: (votesData || []).filter((v) => v.option_id === option.id).length,
+          }));
+
+          const userVotes = (votesData || [])
+            .filter((v) => v.user_id === user.id)
+            .map((v) => v.option_id);
+
+          return {
+            ...poll,
+            options: optionsWithCounts,
+            user_votes: userVotes,
+            total_votes: (votesData || []).length,
+          };
+        })
+      );
+
+      setActivePolls(pollsWithDetails as Poll[]);
+    } catch (err) {
+      console.error("Error fetching polls:", err);
+    } finally {
+      setPollsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPolls = async () => {
-      if (!user || groups.length === 0) {
-        setPollsLoading(false);
-        return;
-      }
-
-      try {
-        const groupIds = groups.map(g => g.id);
-        const { data: pollsData } = await supabase
-          .from("polls")
-          .select("*")
-          .in("group_id", groupIds)
-          .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`);
-
-        setActivePolls((pollsData as Poll[]) || []);
-      } catch (err) {
-        console.error("Error fetching polls:", err);
-      } finally {
-        setPollsLoading(false);
-      }
-    };
-    
     if (!loading) {
       fetchPolls();
     }
@@ -175,6 +206,7 @@ export default function Dashboard() {
                 polls={activePolls}
                 loading={pollsLoading || loading}
                 getGroupName={getGroupName}
+                onPollUpdate={fetchPolls}
               />
             </div>
 
