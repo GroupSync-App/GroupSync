@@ -27,9 +27,9 @@ const statusLabels: Record<string, string> = {
   in_progress: "In Bearbeitung",
 };
 
-const priorityConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const priorityConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; className?: string }> = {
   high: { label: "Hoch", variant: "destructive" },
-  medium: { label: "Mittel", variant: "default" },
+  medium: { label: "Mittel", variant: "outline", className: "border-warning text-warning bg-warning/10" },
   low: { label: "Niedrig", variant: "secondary" },
 };
 
@@ -87,7 +87,7 @@ export function UpcomingTasks({ tasks, loading, getGroupName }: UpcomingTasksPro
                   </div>
                   <div className="flex gap-1 flex-shrink-0">
                     {task.priority && priorityConfig[task.priority] && (
-                      <Badge variant={priorityConfig[task.priority].variant} className="text-xs">
+                      <Badge variant={priorityConfig[task.priority].variant} className={`text-xs ${priorityConfig[task.priority].className || ""}`}>
                         {priorityConfig[task.priority].label}
                       </Badge>
                     )}
