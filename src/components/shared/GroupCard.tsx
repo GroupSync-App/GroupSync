@@ -1,4 +1,5 @@
-import { Calendar, Users } from "lucide-react";
+import { useState } from "react";
+import { Calendar, Users, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ export function GroupCard({
   className,
   onClick,
 }: GroupCardProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const isFull = memberCount >= maxMembers;
   const calculatedColorIndex = colorIndex !== undefined 
     ? colorIndex % gradientColors.length 
@@ -101,9 +103,20 @@ export function GroupCard({
           <Button 
             variant="ghost" 
             className="w-full bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20 text-primary"
-            onClick={onClick}
+            disabled={isLoading}
+            onClick={() => {
+              setIsLoading(true);
+              onClick?.();
+            }}
           >
-            Gruppe öffnen
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Lädt...
+              </>
+            ) : (
+              "Gruppe öffnen"
+            )}
           </Button>
         </div>
       </div>
