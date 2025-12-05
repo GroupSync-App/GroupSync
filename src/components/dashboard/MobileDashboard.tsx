@@ -57,6 +57,7 @@ interface ExpandableCardProps {
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  preview?: React.ReactNode;
 }
 
 function ExpandableCard({
@@ -68,6 +69,7 @@ function ExpandableCard({
   isOpen,
   onToggle,
   children,
+  preview,
 }: ExpandableCardProps) {
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle}>
@@ -98,6 +100,14 @@ function ExpandableCard({
               isOpen && "rotate-180"
             )} />
           </div>
+          {/* Preview when collapsed */}
+          {!isOpen && preview && (
+            <div className="px-6 pb-4 pt-0 border-t border-border/50">
+              <div className="pt-3 text-left">
+                {preview}
+              </div>
+            </div>
+          )}
         </CollapsibleTrigger>
         <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
           <div className="px-6 pb-6 pt-0">
@@ -143,6 +153,58 @@ export function MobileDashboard({
     }
   };
 
+  // Preview components for collapsed state
+  const groupsPreview = !loading && groups.length > 0 ? (
+    <div className="space-y-1.5">
+      {groups.slice(0, 2).map((group) => (
+        <div key={group.id} className="flex items-center gap-2 text-sm">
+          <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+          <span className="truncate text-muted-foreground">{group.name}</span>
+          {group.subject && (
+            <span className="text-xs text-muted-foreground/70 truncate">• {group.subject}</span>
+          )}
+        </div>
+      ))}
+      {groups.length > 2 && (
+        <p className="text-xs text-muted-foreground/70">+ {groups.length - 2} weitere</p>
+      )}
+    </div>
+  ) : null;
+
+  const tasksPreview = !tasksLoading && tasks.length > 0 ? (
+    <div className="space-y-1.5">
+      {tasks.slice(0, 2).map((task) => (
+        <div key={task.id} className="flex items-center gap-2 text-sm">
+          <span className={cn(
+            "w-2 h-2 rounded-full flex-shrink-0",
+            task.priority === "high" ? "bg-red-500" : task.priority === "medium" ? "bg-amber-500" : "bg-emerald-500"
+          )} />
+          <span className="truncate text-muted-foreground">{task.title}</span>
+        </div>
+      ))}
+      {tasks.length > 2 && (
+        <p className="text-xs text-muted-foreground/70">+ {tasks.length - 2} weitere</p>
+      )}
+    </div>
+  ) : null;
+
+  const appointmentsPreview = !appointmentsLoading && appointments.length > 0 ? (
+    <div className="space-y-1.5">
+      {appointments.slice(0, 2).map((appointment) => (
+        <div key={appointment.id} className="flex items-center gap-2 text-sm">
+          <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
+          <span className="truncate text-muted-foreground">{appointment.title}</span>
+          <span className="text-xs text-muted-foreground/70 whitespace-nowrap">
+            {new Date(appointment.start_time).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+          </span>
+        </div>
+      ))}
+      {appointments.length > 2 && (
+        <p className="text-xs text-muted-foreground/70">+ {appointments.length - 2} weitere</p>
+      )}
+    </div>
+  ) : null;
+
   return (
     <div className="space-y-4">
       {/* Groups Section */}
@@ -154,6 +216,7 @@ export function MobileDashboard({
         iconColor="text-blue-600 dark:text-blue-400"
         isOpen={openSection === "groups"}
         onToggle={() => toggleSection("groups")}
+        preview={groupsPreview}
       >
         {loading ? (
           <div className="space-y-3">
@@ -210,6 +273,7 @@ export function MobileDashboard({
         iconColor="text-emerald-600 dark:text-emerald-400"
         isOpen={openSection === "tasks"}
         onToggle={() => toggleSection("tasks")}
+        preview={tasksPreview}
       >
         {tasksLoading ? (
           <div className="space-y-3">
@@ -265,6 +329,7 @@ export function MobileDashboard({
         iconColor="text-amber-600 dark:text-amber-400"
         isOpen={openSection === "appointments"}
         onToggle={() => toggleSection("appointments")}
+        preview={appointmentsPreview}
       >
         {appointmentsLoading ? (
           <div className="space-y-3">
