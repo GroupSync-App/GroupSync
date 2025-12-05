@@ -21,22 +21,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+export interface GroupMemberOption {
+  user_id: string;
+  display_name: string | null;
+}
+
 interface CreateTaskDialogProps {
   onCreateTask: (task: {
     title: string;
     description?: string;
     priority?: "low" | "medium" | "high";
     due_date?: string;
+    assigned_to?: string;
   }) => Promise<void>;
+  members?: GroupMemberOption[];
 }
 
-export function CreateTaskDialog({ onCreateTask }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [dueDate, setDueDate] = useState("");
+  const [assignedTo, setAssignedTo] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +57,7 @@ export function CreateTaskDialog({ onCreateTask }: CreateTaskDialogProps) {
         description: description.trim() || undefined,
         priority,
         due_date: dueDate || undefined,
+        assigned_to: assignedTo || undefined,
       });
       setOpen(false);
       resetForm();
@@ -62,6 +71,7 @@ export function CreateTaskDialog({ onCreateTask }: CreateTaskDialogProps) {
     setDescription("");
     setPriority("medium");
     setDueDate("");
+    setAssignedTo("");
   };
 
   return (
@@ -125,6 +135,24 @@ export function CreateTaskDialog({ onCreateTask }: CreateTaskDialogProps) {
                 />
               </div>
             </div>
+            {members.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="assigned_to">Zuweisen an</Label>
+                <Select value={assignedTo} onValueChange={setAssignedTo}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Niemand zugewiesen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Niemand</SelectItem>
+                    {members.map((member) => (
+                      <SelectItem key={member.user_id} value={member.user_id}>
+                        {member.display_name || "Unbekannt"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
