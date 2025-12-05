@@ -88,14 +88,20 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Titel *</Label>
+              <Label htmlFor="title" className="flex items-center gap-1">
+                Titel <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="z.B. Projektbesprechung"
                 required
+                className={!title.trim() ? "border-destructive/50 focus:border-destructive" : ""}
               />
+              {!title.trim() && (
+                <p className="text-xs text-muted-foreground">Bitte gib einen Titel ein</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Beschreibung</Label>
@@ -118,26 +124,35 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="start_date">Startdatum *</Label>
+                <Label htmlFor="start_date" className="flex items-center gap-1">
+                  Startdatum <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="start_date"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   required
+                  className={!startDate ? "border-destructive/50" : ""}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="start_time">Startzeit *</Label>
+                <Label htmlFor="start_time" className="flex items-center gap-1">
+                  Startzeit <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="start_time"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   required
+                  className={!startTime ? "border-destructive/50" : ""}
                 />
               </div>
             </div>
+            {(!startDate || !startTime) && (
+              <p className="text-xs text-muted-foreground -mt-2">Bitte Datum und Uhrzeit ausfüllen</p>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="end_date">Enddatum</Label>
