@@ -78,10 +78,7 @@ export function useGroups() {
         (groupsData || []).map(async (group) => {
           const { data: members, error: membersError } = await supabase
             .from("group_members")
-            .select(`
-              *,
-              profile:profiles(display_name, study_program, avatar_url, availability)
-            `)
+            .select("*")
             .eq("group_id", group.id);
 
           if (membersError) {
@@ -89,10 +86,21 @@ export function useGroups() {
             return { ...group, members: [], memberCount: 0 };
           }
 
+          // Fetch profiles separately to ensure RLS works correctly
+          const userIds = (members || []).map((m) => m.user_id);
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, display_name, study_program, avatar_url, availability")
+            .in("id", userIds);
+
+          const profileMap = new Map(
+            (profiles || []).map((p) => [p.id, p])
+          );
+
           const typedMembers: GroupMember[] = (members || []).map((m) => ({
             ...m,
             role: m.role as "owner" | "member",
-            profile: m.profile as GroupMember["profile"],
+            profile: profileMap.get(m.user_id) as GroupMember["profile"] || undefined,
           }));
 
           return {
@@ -287,16 +295,24 @@ export function useGroups() {
 
     const { data: members } = await supabase
       .from("group_members")
-      .select(`
-        *,
-        profile:profiles(display_name, study_program, avatar_url, availability)
-      `)
+      .select("*")
       .eq("group_id", groupId);
+
+    // Fetch profiles separately to ensure RLS works correctly
+    const userIds = (members || []).map((m) => m.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, study_program, avatar_url, availability")
+      .in("id", userIds);
+
+    const profileMap = new Map(
+      (profiles || []).map((p) => [p.id, p])
+    );
 
     const typedMembers: GroupMember[] = (members || []).map((m) => ({
       ...m,
       role: m.role as "owner" | "member",
-      profile: m.profile as GroupMember["profile"],
+      profile: profileMap.get(m.user_id) as GroupMember["profile"] || undefined,
     }));
 
     return {
