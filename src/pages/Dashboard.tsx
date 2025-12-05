@@ -45,12 +45,12 @@ export default function Dashboard() {
 
         {/* Groups Section */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-foreground">Deine Gruppen</h2>
               <p className="text-sm text-muted-foreground">Verwalte deine Gruppenprojekte und Aufgaben</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <JoinGroupDialog />
               <CreateGroupDialog />
             </div>
