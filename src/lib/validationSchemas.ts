@@ -25,14 +25,6 @@ export const createAppointmentSchema = z.object({
   location: z.string().max(200, "Ort darf maximal 200 Zeichen haben").optional(),
   start_time: z.string().min(1, "Startzeit ist erforderlich"),
   end_time: z.string().optional(),
-}).refine((data) => {
-  if (data.end_time && data.start_time) {
-    return new Date(data.end_time) > new Date(data.start_time);
-  }
-  return true;
-}, {
-  message: "Endzeit muss nach der Startzeit liegen",
-  path: ["end_time"],
 });
 
 // Profile setup validation schema
@@ -41,7 +33,7 @@ export const profileSetupSchema = z.object({
   study_program: z.string().min(1, "Studiengang ist erforderlich"),
   semester: z.number().min(1, "Semester ist erforderlich").max(12, "Semester darf maximal 12 sein"),
   skills: z.array(z.string()).optional(),
-  availability: z.record(z.array(z.string())).optional(),
+  availability: z.record(z.string(), z.array(z.string())).optional(),
   preferred_group_size: z.number().min(2).max(8),
 });
 
@@ -54,7 +46,7 @@ export const profileEditSchema = z.object({
   semester: z.number().min(1).max(12).nullable().optional(),
   bio: z.string().max(1000, "Bio darf maximal 1000 Zeichen haben").optional(),
   skills: z.array(z.string()).optional(),
-  availability: z.record(z.array(z.string())).optional(),
+  availability: z.record(z.string(), z.array(z.string())).optional(),
   preferred_group_size: z.number().min(2).max(8),
 });
 
