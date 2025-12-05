@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2, Clock } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
 import { TaskList } from "@/components/tasks/TaskList";
 import { AppointmentList } from "@/components/appointments/AppointmentList";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
+import { GroupAvailabilityGrid } from "@/components/groups/GroupAvailabilityGrid";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -246,6 +247,28 @@ export default function GroupDetail() {
                   />
                 </TabsContent>
               </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Group Availability */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Gemeinsame Verfügbarkeit
+              </CardTitle>
+              <CardDescription>
+                Klicke auf einen Zeitslot, um zu sehen wer verfügbar ist
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GroupAvailabilityGrid
+                members={group.members.map((m) => ({
+                  user_id: m.user_id,
+                  display_name: m.profile?.display_name || null,
+                  availability: m.profile?.availability as { [day: string]: string[] } | null,
+                }))}
+              />
             </CardContent>
           </Card>
 
