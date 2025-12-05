@@ -15,6 +15,7 @@ const gradientColors = [
 
 interface GroupCardProps {
   id?: string | number;
+  colorIndex?: number;
   title: string;
   subject?: string;
   deadline?: string;
@@ -41,6 +42,7 @@ const getDeadlineInfo = (deadline: string) => {
 
 export function GroupCard({
   id = 0,
+  colorIndex,
   title,
   subject,
   deadline,
@@ -50,10 +52,12 @@ export function GroupCard({
   onClick,
 }: GroupCardProps) {
   const isFull = memberCount >= maxMembers;
-  const colorIndex = typeof id === "string" 
-    ? id.charCodeAt(0) % gradientColors.length 
-    : Number(id) % gradientColors.length;
-  const gradientClass = gradientColors[colorIndex];
+  const calculatedColorIndex = colorIndex !== undefined 
+    ? colorIndex % gradientColors.length 
+    : typeof id === "string" 
+      ? id.charCodeAt(0) % gradientColors.length 
+      : Number(id) % gradientColors.length;
+  const gradientClass = gradientColors[calculatedColorIndex];
   
   const deadlineInfo = deadline ? getDeadlineInfo(deadline) : null;
 

@@ -81,10 +81,11 @@ export default function Dashboard() {
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {groups.map((group) => (
+              {groups.map((group, index) => (
                 <GroupCard
                   key={group.id}
                   id={group.id}
+                  colorIndex={index}
                   title={group.name}
                   subject={group.subject || undefined}
                   deadline={group.deadline || undefined}
