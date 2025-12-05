@@ -14,7 +14,6 @@ import { AvailabilityGrid, AvailabilityData } from "@/components/profile/Availab
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { profileSetupSchema } from "@/lib/validationSchemas";
 
 const UNIVERSITIES = [
   "Technische Universität München",
@@ -56,7 +55,6 @@ export default function ProfileSetup() {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [university, setUniversity] = useState("");
   const [studyProgram, setStudyProgram] = useState("");
@@ -67,25 +65,8 @@ export default function ProfileSetup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
 
-    const validation = profileSetupSchema.safeParse({
-      university,
-      study_program: studyProgram,
-      semester: semester || 0,
-      skills,
-      availability,
-      preferred_group_size: preferredGroupSize,
-    });
-
-    if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
-      validation.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
+    if (!university || !studyProgram || !semester) {
       toast({
         title: "Fehlende Angaben",
         description: "Bitte fülle alle Pflichtfelder aus.",
@@ -179,8 +160,6 @@ export default function ProfileSetup() {
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.study_program && <p className="text-xs text-destructive">{errors.study_program}</p>}
-                {errors.university && <p className="text-xs text-destructive">{errors.university}</p>}
               </div>
 
               <div className="space-y-2">
@@ -197,7 +176,6 @@ export default function ProfileSetup() {
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.semester && <p className="text-xs text-destructive">{errors.semester}</p>}
               </div>
 
               <div className="space-y-2">

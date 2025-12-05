@@ -21,8 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGroups } from "@/hooks/useGroups";
-import { createGroupSchema } from "@/lib/validationSchemas";
-import { toast } from "@/hooks/use-toast";
 
 const subjects = [
   "Informatik",
@@ -45,7 +43,6 @@ const subjects = [
 export function CreateGroupDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -57,35 +54,17 @@ export function CreateGroupDialog() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrors({});
+    if (!formData.name.trim()) return;
 
-    const validation = createGroupSchema.safeParse({
-      name: formData.name,
-      description: formData.description || undefined,
+    setLoading(true);
+    const { error } = await createGroup({
+      name: formData.name.trim(),
+      description: formData.description.trim() || undefined,
       subject: formData.subject || undefined,
       max_members: parseInt(formData.max_members) || 5,
       deadline: formData.deadline || undefined,
     });
 
-    if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
-      validation.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setLoading(true);
-    const { error } = await createGroup({
-      name: validation.data.name,
-      description: validation.data.description,
-      subject: validation.data.subject,
-      max_members: validation.data.max_members,
-      deadline: validation.data.deadline,
-    });
     setLoading(false);
 
     if (!error) {
@@ -97,7 +76,6 @@ export function CreateGroupDialog() {
         max_members: "5",
         deadline: "",
       });
-      setErrors({});
     }
   };
 
@@ -127,10 +105,8 @@ export function CreateGroupDialog() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                maxLength={100}
                 required
               />
-              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="subject">Fachbereich</Label>
@@ -161,10 +137,8 @@ export function CreateGroupDialog() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                maxLength={500}
                 rows={3}
               />
-              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

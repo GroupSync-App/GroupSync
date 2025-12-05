@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarPlus } from "lucide-react";
+import { Plus, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createAppointmentSchema } from "@/lib/validationSchemas";
 
 interface CreateAppointmentDialogProps {
   onCreateAppointment: (appointment: {
@@ -28,7 +27,6 @@ interface CreateAppointmentDialogProps {
 export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointmentDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -39,41 +37,21 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!startDate || !startTime) return;
-    setErrors({});
-
-    const start_time = new Date(`${startDate}T${startTime}`).toISOString();
-    const end_time = endDate && endTime 
-      ? new Date(`${endDate}T${endTime}`).toISOString() 
-      : undefined;
-
-    const validation = createAppointmentSchema.safeParse({
-      title: title,
-      description: description || undefined,
-      location: location || undefined,
-      start_time,
-      end_time,
-    });
-
-    if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
-      validation.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0].toString()] = err.message;
-        }
-      });
-      setErrors(fieldErrors);
-      return;
-    }
+    if (!title.trim() || !startDate || !startTime) return;
 
     setLoading(true);
     try {
+      const start_time = new Date(`${startDate}T${startTime}`).toISOString();
+      const end_time = endDate && endTime 
+        ? new Date(`${endDate}T${endTime}`).toISOString() 
+        : undefined;
+
       await onCreateAppointment({
-        title: validation.data.title,
-        description: validation.data.description,
-        location: validation.data.location,
-        start_time: validation.data.start_time,
-        end_time: validation.data.end_time,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        location: location.trim() || undefined,
+        start_time,
+        end_time,
       });
       setOpen(false);
       resetForm();
@@ -90,7 +68,6 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
     setStartTime("");
     setEndDate("");
     setEndTime("");
-    setErrors({});
   };
 
   return (
@@ -119,11 +96,12 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="z.B. Projektbesprechung"
-                maxLength={200}
                 required
-                className={errors.title ? "border-destructive" : ""}
+                className={!title.trim() ? "border-destructive/50 focus:border-destructive" : ""}
               />
-              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
+              {!title.trim() && (
+                <p className="text-xs text-muted-foreground">Bitte gib einen Titel ein</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Beschreibung</Label>
@@ -132,10 +110,8 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Worum geht es bei dem Treffen?"
-                maxLength={1000}
                 rows={2}
               />
-              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="location">Ort</Label>
@@ -144,9 +120,7 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="z.B. Bibliothek, Zoom-Link..."
-                maxLength={200}
               />
-              {errors.location && <p className="text-xs text-destructive">{errors.location}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -174,9 +148,8 @@ export function CreateAppointmentDialog({ onCreateAppointment }: CreateAppointme
                   required
                   className={!startTime ? "border-destructive/50" : ""}
                 />
+              </div>
             </div>
-            {errors.end_time && <p className="text-xs text-destructive">{errors.end_time}</p>}
-          </div>
             {(!startDate || !startTime) && (
               <p className="text-xs text-muted-foreground -mt-2">Bitte Datum und Uhrzeit ausfüllen</p>
             )}

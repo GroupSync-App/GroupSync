@@ -183,12 +183,14 @@ export function useGroups() {
     if (!user) return { error: new Error("Not authenticated") };
 
     try {
-      // Find group by invite code using secure RPC function
-      const { data: groupData, error: groupError } = await supabase
-        .rpc("get_group_by_invite_code", { _invite_code: inviteCode.toLowerCase() });
+      // Find group by invite code
+      const { data: group, error: groupError } = await supabase
+        .from("groups")
+        .select("*")
+        .eq("invite_code", inviteCode.toLowerCase())
+        .maybeSingle();
 
       if (groupError) throw groupError;
-      const group = groupData?.[0];
       if (!group) {
         toast({
           title: "Gruppe nicht gefunden",
@@ -215,8 +217,13 @@ export function useGroups() {
         return { error: new Error("Already a member") };
       }
 
-      // Check member count (use member_count from RPC)
-      if (Number(group.member_count) >= group.max_members) {
+      // Check member count
+      const { count } = await supabase
+        .from("group_members")
+        .select("*", { count: "exact", head: true })
+        .eq("group_id", group.id);
+
+      if (count && count >= group.max_members) {
         toast({
           title: "Gruppe voll",
           description: "Diese Gruppe hat keine freien Plätze mehr.",
@@ -255,22 +262,26 @@ export function useGroups() {
   };
 
   const getGroupByInviteCode = async (inviteCode: string) => {
-    // Use secure RPC function that doesn't expose invite codes
     const { data, error } = await supabase
-      .rpc("get_group_by_invite_code", { _invite_code: inviteCode.toLowerCase() });
+      .from("groups")
+      .select("*")
+      .eq("invite_code", inviteCode.toLowerCase())
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching group:", error);
       return null;
     }
 
-    const group = data?.[0];
-    if (!group) return null;
+    if (!data) return null;
 
-    return { 
-      ...group, 
-      memberCount: Number(group.member_count) || 0 
-    };
+    // Get member count
+    const { count } = await supabase
+      .from("group_members")
+      .select("*", { count: "exact", head: true })
+      .eq("group_id", data.id);
+
+    return { ...data, memberCount: count || 0 };
   };
 
   const getGroupById = async (groupId: string) => {

@@ -5,26 +5,15 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useGroups } from "@/hooks/useGroups";
+import { useGroups, Group } from "@/hooks/useGroups";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-
-// Type for the group preview data returned by the secure RPC function
-interface GroupPreview {
-  id: string;
-  name: string;
-  subject: string | null;
-  description: string | null;
-  max_members: number;
-  deadline: string | null;
-  memberCount: number;
-}
 
 export default function JoinGroup() {
   const { code } = useParams();
   const navigate = useNavigate();
   const { getGroupByInviteCode, joinGroup } = useGroups();
-  const [group, setGroup] = useState<GroupPreview | null>(null);
+  const [group, setGroup] = useState<(Group & { memberCount: number }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
