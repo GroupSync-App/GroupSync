@@ -153,7 +153,7 @@ export function CreateGroupDialog() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[2, 3, 4, 5, 6, 7, 8, 10].map((num) => (
+                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                       <SelectItem key={num} value={num.toString()}>
                         {num} Personen
                       </SelectItem>
