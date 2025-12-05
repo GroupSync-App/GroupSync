@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -47,8 +48,10 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
               </div>
             </Link>
 
-            {user && (
-              <DropdownMenu>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              {user && (
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9">
@@ -84,8 +87,9 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
                     Abmelden
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </header>
       )}
