@@ -77,15 +77,15 @@ export function GroupAvailabilityGrid({ members }: GroupAvailabilityGridProps) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="w-full">
+        <table className="w-full border-collapse table-fixed">
           <thead>
             <tr>
-              <th className="p-2 text-xs text-muted-foreground font-medium text-left"></th>
+              <th className="p-1 text-[10px] sm:text-xs text-muted-foreground font-medium text-left w-12 sm:w-16"></th>
               {WEEKDAYS.map((day) => (
                 <th
                   key={day.key}
-                  className="p-2 text-xs text-muted-foreground font-medium text-center"
+                  className="p-0.5 sm:p-1 text-[10px] sm:text-xs text-muted-foreground font-medium text-center"
                 >
                   {day.label}
                 </th>
@@ -95,9 +95,9 @@ export function GroupAvailabilityGrid({ members }: GroupAvailabilityGridProps) {
           <tbody>
             {TIME_SLOTS.map((slot) => (
               <tr key={slot.key}>
-                <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
-                  <div>{slot.label}</div>
-                  <div className="text-[10px] opacity-70">{slot.time}</div>
+                <td className="p-1 text-[10px] sm:text-xs text-muted-foreground">
+                  <div className="truncate">{slot.label}</div>
+                  <div className="text-[8px] sm:text-[10px] opacity-70">{slot.time}</div>
                 </td>
                 {WEEKDAYS.map((day) => {
                   const availableMembers = getAvailableMembers(day.key, slot.key);
@@ -105,7 +105,7 @@ export function GroupAvailabilityGrid({ members }: GroupAvailabilityGridProps) {
                   const popoverId = `${day.key}-${slot.key}`;
 
                   return (
-                    <td key={popoverId} className="p-1 text-center">
+                    <td key={popoverId} className="p-0.5 text-center">
                       <Popover
                         open={openPopover === popoverId}
                         onOpenChange={(open) =>
@@ -116,7 +116,7 @@ export function GroupAvailabilityGrid({ members }: GroupAvailabilityGridProps) {
                           <button
                             type="button"
                             className={cn(
-                              "w-8 h-8 rounded-md transition-all duration-200 border text-xs font-medium",
+                              "w-6 h-6 sm:w-8 sm:h-8 rounded-md transition-all duration-200 border text-[10px] sm:text-xs font-medium",
                               getColorClass(count, totalMembers),
                               count > 0 && "cursor-pointer hover:scale-105 hover:shadow-md"
                             )}
