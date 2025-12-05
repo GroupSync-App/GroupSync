@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { z } from "zod";
+
+const pollSchema = z.object({
+  title: z.string().trim().min(1, "Frage ist erforderlich").max(200, "Frage darf max. 200 Zeichen haben"),
+  description: z.string().max(1000, "Beschreibung darf max. 1000 Zeichen haben").optional(),
+  options: z.array(z.string().max(200, "Option darf max. 200 Zeichen haben")),
+});
 
 interface CreatePollDialogProps {
   onCreatePoll: (data: {
@@ -29,6 +36,7 @@ interface CreatePollDialogProps {
 export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -38,9 +46,23 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     
     const validOptions = options.filter((o) => o.trim() !== "");
     if (validOptions.length < 2) {
+      setErrors({ options: "Mindestens 2 Optionen erforderlich" });
+      return;
+    }
+
+    const result = pollSchema.safeParse({ title, description, options: validOptions });
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
       return;
     }
 
@@ -65,6 +87,7 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
     setAllowMultiple(false);
     setIsAnonymous(false);
     setEndsAt("");
+    setErrors({});
   };
 
   const addOption = () => {
@@ -81,7 +104,7 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
 
   const updateOption = (index: number, value: string) => {
     const newOptions = [...options];
-    newOptions[index] = value;
+    newOptions[index] = value.slice(0, 200);
     setOptions(newOptions);
   };
 
@@ -109,8 +132,10 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
                 placeholder="Wann sollen wir uns treffen?"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={200}
                 required
               />
+              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Beschreibung</Label>
@@ -119,8 +144,10 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
                 placeholder="Optionale Details zur Umfrage..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                maxLength={1000}
                 rows={2}
               />
+              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="space-y-2">
               <Label>Optionen * (mind. 2)</Label>
@@ -131,6 +158,7 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
                       placeholder={`Option ${index + 1}`}
                       value={option}
                       onChange={(e) => updateOption(index, e.target.value)}
+                      maxLength={200}
                     />
                     {options.length > 2 && (
                       <Button
@@ -145,6 +173,7 @@ export function CreatePollDialog({ onCreatePoll }: CreatePollDialogProps) {
                   </div>
                 ))}
               </div>
+              {errors.options && <p className="text-xs text-destructive">{errors.options}</p>}
               {options.length < 10 && (
                 <Button
                   type="button"

@@ -20,6 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { z } from "zod";
+
+const taskSchema = z.object({
+  title: z.string().trim().min(1, "Titel ist erforderlich").max(200, "Titel darf max. 200 Zeichen haben"),
+  description: z.string().max(2000, "Beschreibung darf max. 2000 Zeichen haben").optional(),
+});
 
 export interface GroupMemberOption {
   user_id: string;
@@ -40,6 +46,7 @@ interface CreateTaskDialogProps {
 export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
@@ -48,7 +55,19 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    setErrors({});
+
+    const result = taskSchema.safeParse({ title, description });
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0].toString()] = err.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -72,6 +91,7 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
     setPriority("medium");
     setDueDate("");
     setAssignedTo("");
+    setErrors({});
   };
 
   return (
@@ -98,8 +118,10 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Aufgabentitel eingeben..."
+                maxLength={200}
                 required
               />
+              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Beschreibung</Label>
@@ -108,8 +130,10 @@ export function CreateTaskDialog({ onCreateTask, members = [] }: CreateTaskDialo
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optionale Beschreibung..."
+                maxLength={2000}
                 rows={3}
               />
+              {errors.description && <p className="text-xs text-destructive">{errors.description}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
