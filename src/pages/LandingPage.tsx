@@ -91,26 +91,49 @@ const LandingPage = () => {
             </div>
           </div>
           
-          {/* Hero visual */}
+          {/* Hero visual - Dashboard Preview */}
           <div className="mt-16 md:mt-24 relative animate-scale-in animation-delay-300">
             <div className="max-w-5xl mx-auto bg-card rounded-2xl border border-border shadow-2xl shadow-primary/10 overflow-hidden">
-              <div className="p-4 md:p-8 bg-gradient-to-br from-secondary/50 to-background">
+              {/* Mockup Window Header */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-secondary/80 border-b border-border">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                  <div className="w-3 h-3 rounded-full bg-warning/60" />
+                  <div className="w-3 h-3 rounded-full bg-success/60" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <span className="text-sm font-medium text-muted-foreground">Dashboard</span>
+                </div>
+                <div className="w-12" /> {/* Spacer for balance */}
+              </div>
+              
+              <div className="p-4 md:p-8 bg-gradient-to-br from-secondary/30 to-background">
+                {/* Context Badge */}
+                <div className="flex items-center justify-center mb-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                    <BarChart3 className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">So könnte dein Dashboard aussehen</span>
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { icon: Users, label: "3 Gruppen", color: "from-primary to-primary" },
-                    { icon: CheckSquare, label: "12 Aufgaben", color: "from-accent to-accent" },
-                    { icon: Calendar, label: "5 Termine", color: "from-warning to-warning" },
-                    { icon: BarChart3, label: "2 Umfragen", color: "from-success to-success" },
+                    { icon: Users, number: "3", label: "Gruppen", sublabel: "aktiv", color: "from-primary to-primary" },
+                    { icon: CheckSquare, number: "12", label: "Aufgaben", sublabel: "offen", color: "from-accent to-accent" },
+                    { icon: Calendar, number: "5", label: "Termine", sublabel: "geplant", color: "from-warning to-warning" },
+                    { icon: BarChart3, number: "2", label: "Umfragen", sublabel: "laufend", color: "from-success to-success" },
                   ].map((item, i) => (
                     <div 
                       key={i}
-                      className="p-4 md:p-6 bg-card rounded-xl border border-border hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-lg"
+                      className="p-4 md:p-6 bg-card rounded-xl border border-border hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-lg group"
                       style={{ animationDelay: `${400 + i * 100}ms` }}
                     >
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3`}>
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                         <item.icon className="w-6 h-6 text-primary-foreground" />
                       </div>
-                      <p className="font-semibold text-foreground">{item.label}</p>
+                      <p className="text-2xl md:text-3xl font-bold text-foreground">{item.number}</p>
+                      <p className="font-medium text-foreground">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">{item.sublabel}</p>
                     </div>
                   ))}
                 </div>
