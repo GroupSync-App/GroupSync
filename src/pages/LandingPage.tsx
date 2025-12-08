@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { AnimatedStatCard } from "@/components/landing/AnimatedStatCard";
 import { 
   Users, 
   CheckSquare, 
@@ -118,23 +119,20 @@ const LandingPage = () => {
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { icon: Users, number: "3", label: "Gruppen", sublabel: "aktiv", color: "from-primary to-primary" },
-                    { icon: CheckSquare, number: "12", label: "Aufgaben", sublabel: "offen", color: "from-accent to-accent" },
-                    { icon: Calendar, number: "5", label: "Termine", sublabel: "geplant", color: "from-warning to-warning" },
-                    { icon: BarChart3, number: "2", label: "Umfragen", sublabel: "laufend", color: "from-success to-success" },
+                    { icon: Users, number: 3, label: "Gruppen", sublabel: "aktiv", color: "from-primary to-primary" },
+                    { icon: CheckSquare, number: 12, label: "Aufgaben", sublabel: "offen", color: "from-accent to-accent" },
+                    { icon: Calendar, number: 5, label: "Termine", sublabel: "geplant", color: "from-warning to-warning" },
+                    { icon: BarChart3, number: 2, label: "Umfragen", sublabel: "laufend", color: "from-success to-success" },
                   ].map((item, i) => (
-                    <div 
+                    <AnimatedStatCard
                       key={i}
-                      className="p-4 md:p-6 bg-card rounded-xl border border-border hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-lg group"
-                      style={{ animationDelay: `${400 + i * 100}ms` }}
-                    >
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                        <item.icon className="w-6 h-6 text-primary-foreground" />
-                      </div>
-                      <p className="text-2xl md:text-3xl font-bold text-foreground">{item.number}</p>
-                      <p className="font-medium text-foreground">{item.label}</p>
-                      <p className="text-sm text-muted-foreground">{item.sublabel}</p>
-                    </div>
+                      icon={item.icon}
+                      number={item.number}
+                      label={item.label}
+                      sublabel={item.sublabel}
+                      color={item.color}
+                      delay={400 + i * 100}
+                    />
                   ))}
                 </div>
               </div>
