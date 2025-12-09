@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { notifyGroupMembers } from "@/lib/email";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export interface PollOption {
   id: string;
@@ -41,7 +44,7 @@ export function usePolls(groupId?: string) {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const fetchPolls = async () => {
@@ -143,6 +146,21 @@ export function usePolls(groupId?: string) {
       toast({
         title: "Umfrage erstellt",
         description: "Die Umfrage wurde erfolgreich erstellt.",
+      });
+
+      // Notify group members about the new poll
+      const creatorName = profile?.display_name || user.email?.split("@")[0] || "Jemand";
+      const endsAtFormatted = data.ends_at 
+        ? format(new Date(data.ends_at), "dd. MMMM yyyy, HH:mm", { locale: de }) + " Uhr"
+        : undefined;
+
+      notifyGroupMembers(data.group_id, user.id, "poll-created", {
+        pollTitle: data.title,
+        pollDescription: data.description,
+        creatorName,
+        endsAt: endsAtFormatted,
+      }).catch((err) => {
+        console.error("Failed to notify group members:", err);
       });
 
       await fetchPolls();

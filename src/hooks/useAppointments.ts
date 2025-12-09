@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { notifyGroupMembers } from "@/lib/email";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export interface Appointment {
   id: string;
@@ -20,7 +23,7 @@ export function useAppointments(groupId?: string) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const fetchAppointments = async () => {
@@ -82,6 +85,23 @@ export function useAppointments(groupId?: string) {
       toast({
         title: "Termin erstellt",
         description: `"${data.title}" wurde hinzugefügt.`,
+      });
+
+      // Notify group members about the new appointment
+      const creatorName = profile?.display_name || user.email?.split("@")[0] || "Jemand";
+      const startDate = new Date(data.start_time);
+      const appointmentDate = format(startDate, "dd. MMMM yyyy", { locale: de });
+      const appointmentTime = format(startDate, "HH:mm", { locale: de }) + " Uhr";
+
+      notifyGroupMembers(data.group_id, user.id, "appointment-created", {
+        appointmentTitle: data.title,
+        appointmentDescription: data.description,
+        appointmentDate,
+        appointmentTime,
+        appointmentLocation: data.location,
+        creatorName,
+      }).catch((err) => {
+        console.error("Failed to notify group members:", err);
       });
 
       await fetchAppointments();

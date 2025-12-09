@@ -53,13 +53,51 @@ interface PollReminderEmailData {
   endsAt: string;
 }
 
+interface PollCreatedEmailData {
+  type: "poll-created";
+  to: string;
+  recipientName?: string;
+  pollTitle: string;
+  pollDescription?: string;
+  creatorName: string;
+  groupName: string;
+  endsAt?: string;
+}
+
+interface AppointmentCreatedEmailData {
+  type: "appointment-created";
+  to: string;
+  recipientName?: string;
+  appointmentTitle: string;
+  appointmentDescription?: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  appointmentLocation?: string;
+  creatorName: string;
+  groupName: string;
+}
+
+interface TaskAssignedEmailData {
+  type: "task-assigned";
+  to: string;
+  recipientName?: string;
+  taskTitle: string;
+  taskDescription?: string;
+  dueDate?: string;
+  assignerName: string;
+  groupName: string;
+}
+
 type EmailData = 
   | WelcomeEmailData 
   | GroupInviteEmailData 
   | TaskNotificationEmailData 
   | TaskDueReminderEmailData
   | AppointmentReminderEmailData
-  | PollReminderEmailData;
+  | PollReminderEmailData
+  | PollCreatedEmailData
+  | AppointmentCreatedEmailData
+  | TaskAssignedEmailData;
 
 export const sendEmail = async (data: EmailData): Promise<{ success: boolean; error?: string }> => {
   try {
@@ -165,3 +203,98 @@ export const sendPollReminderEmail = (
     pollTitle,
     endsAt,
   });
+
+// New email functions for immediate notifications
+
+export const sendPollCreatedEmail = (
+  to: string,
+  pollTitle: string,
+  creatorName: string,
+  groupName: string,
+  pollDescription?: string,
+  endsAt?: string,
+  recipientName?: string
+) =>
+  sendEmail({
+    type: "poll-created",
+    to,
+    recipientName,
+    pollTitle,
+    pollDescription,
+    creatorName,
+    groupName,
+    endsAt,
+  });
+
+export const sendAppointmentCreatedEmail = (
+  to: string,
+  appointmentTitle: string,
+  appointmentDate: string,
+  appointmentTime: string,
+  creatorName: string,
+  groupName: string,
+  appointmentDescription?: string,
+  appointmentLocation?: string,
+  recipientName?: string
+) =>
+  sendEmail({
+    type: "appointment-created",
+    to,
+    recipientName,
+    appointmentTitle,
+    appointmentDescription,
+    appointmentDate,
+    appointmentTime,
+    appointmentLocation,
+    creatorName,
+    groupName,
+  });
+
+export const sendTaskAssignedEmail = (
+  to: string,
+  taskTitle: string,
+  assignerName: string,
+  groupName: string,
+  taskDescription?: string,
+  dueDate?: string,
+  recipientName?: string
+) =>
+  sendEmail({
+    type: "task-assigned",
+    to,
+    recipientName,
+    taskTitle,
+    taskDescription,
+    dueDate,
+    assignerName,
+    groupName,
+  });
+
+// Helper function to notify all group members
+export const notifyGroupMembers = async (
+  groupId: string,
+  excludeUserId: string,
+  emailType: "poll-created" | "appointment-created",
+  emailData: Record<string, any>
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { data, error } = await supabase.functions.invoke("notify-group-members", {
+      body: {
+        groupId,
+        excludeUserId,
+        emailType,
+        emailData,
+      },
+    });
+
+    if (error) {
+      console.error("Error notifying group members:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Exception notifying group members:", err);
+    return { success: false, error: err.message };
+  }
+};

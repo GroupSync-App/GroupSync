@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder" | "task-due-reminder" | "poll-reminder";
+  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder" | "task-due-reminder" | "poll-reminder" | "poll-created" | "appointment-created" | "task-assigned";
   to: string;
   recipientName?: string;
   // For group invite
@@ -27,6 +27,10 @@ interface EmailRequest {
   // For poll reminder
   pollTitle?: string;
   endsAt?: string;
+  // For poll/appointment created
+  creatorName?: string;
+  pollDescription?: string;
+  appointmentDescription?: string;
 }
 
 function getWelcomeEmail(recipientName: string): { subject: string; html: string } {
@@ -246,6 +250,125 @@ function getPollReminderEmail(
   };
 }
 
+function getPollCreatedEmail(
+  recipientName: string,
+  pollTitle: string,
+  pollDescription: string,
+  creatorName: string,
+  groupName: string,
+  endsAt: string
+): { subject: string; html: string } {
+  return {
+    subject: `🗳️ Neue Umfrage: ${pollTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          <strong>${creatorName}</strong> hat eine neue Umfrage in der Gruppe <strong>"${groupName}"</strong> erstellt:
+        </p>
+        <div style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); border-radius: 12px; padding: 25px; margin: 20px 0; color: white;">
+          <h3 style="margin: 0 0 15px 0; font-size: 20px;">🗳️ ${pollTitle}</h3>
+          ${pollDescription ? `<p style="margin: 8px 0; font-size: 16px; opacity: 0.9;">${pollDescription}</p>` : ""}
+          ${endsAt ? `<p style="margin: 15px 0 0 0; font-size: 16px;"><strong>⏰ Endet:</strong> ${endsAt}</p>` : ""}
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um deine Stimme abzugeben!
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
+function getAppointmentCreatedEmail(
+  recipientName: string,
+  appointmentTitle: string,
+  appointmentDescription: string,
+  appointmentDate: string,
+  appointmentTime: string,
+  appointmentLocation: string,
+  creatorName: string,
+  groupName: string
+): { subject: string; html: string } {
+  return {
+    subject: `📅 Neuer Termin: ${appointmentTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          <strong>${creatorName}</strong> hat einen neuen Termin in der Gruppe <strong>"${groupName}"</strong> erstellt:
+        </p>
+        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); border-radius: 12px; padding: 25px; margin: 20px 0; color: white;">
+          <h3 style="margin: 0 0 15px 0; font-size: 20px;">📅 ${appointmentTitle}</h3>
+          ${appointmentDescription ? `<p style="margin: 8px 0; font-size: 16px; opacity: 0.9;">${appointmentDescription}</p>` : ""}
+          <p style="margin: 8px 0; font-size: 16px;">
+            🗓️ <strong>Datum:</strong> ${appointmentDate}
+          </p>
+          <p style="margin: 8px 0; font-size: 16px;">
+            ⏰ <strong>Uhrzeit:</strong> ${appointmentTime}
+          </p>
+          ${appointmentLocation ? `
+          <p style="margin: 8px 0; font-size: 16px;">
+            📍 <strong>Ort:</strong> ${appointmentLocation}
+          </p>
+          ` : ""}
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um den Termin zu sehen!
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
+function getTaskAssignedEmail(
+  recipientName: string,
+  taskTitle: string,
+  taskDescription: string,
+  dueDate: string,
+  assignerName: string,
+  groupName: string
+): { subject: string; html: string } {
+  return {
+    subject: `📋 Aufgabe zugewiesen: ${taskTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          <strong>${assignerName}</strong> hat dir eine Aufgabe in der Gruppe <strong>"${groupName}"</strong> zugewiesen:
+        </p>
+        <div style="background: #f3f4f6; border-left: 4px solid #8B5CF6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h3 style="color: #1f2937; margin: 0 0 10px 0;">📋 ${taskTitle}</h3>
+          ${taskDescription ? `<p style="color: #4b5563; margin: 0 0 15px 0;">${taskDescription}</p>` : ""}
+          <p style="color: #8B5CF6; font-weight: 600; margin: 0;">
+            📅 Fällig: ${dueDate || "Kein Datum festgelegt"}
+          </p>
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um die Aufgabe zu bearbeiten.
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -307,6 +430,38 @@ const handler = async (req: Request): Promise<Response> => {
           recipientName,
           emailRequest.pollTitle || "Umfrage",
           emailRequest.endsAt || ""
+        );
+        break;
+      case "poll-created":
+        emailContent = getPollCreatedEmail(
+          recipientName,
+          emailRequest.pollTitle || "Umfrage",
+          emailRequest.pollDescription || "",
+          emailRequest.creatorName || "Jemand",
+          emailRequest.groupName || "Gruppe",
+          emailRequest.endsAt || ""
+        );
+        break;
+      case "appointment-created":
+        emailContent = getAppointmentCreatedEmail(
+          recipientName,
+          emailRequest.appointmentTitle || "Termin",
+          emailRequest.appointmentDescription || "",
+          emailRequest.appointmentDate || "",
+          emailRequest.appointmentTime || "",
+          emailRequest.appointmentLocation || "",
+          emailRequest.creatorName || "Jemand",
+          emailRequest.groupName || "Gruppe"
+        );
+        break;
+      case "task-assigned":
+        emailContent = getTaskAssignedEmail(
+          recipientName,
+          emailRequest.taskTitle || "Aufgabe",
+          emailRequest.taskDescription || "",
+          emailRequest.dueDate || "",
+          emailRequest.assignerName || "Jemand",
+          emailRequest.groupName || "Gruppe"
         );
         break;
       default:

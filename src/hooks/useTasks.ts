@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { sendTaskAssignedEmail } from "@/lib/email";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 export interface Task {
   id: string;
@@ -21,7 +24,7 @@ export function useTasks(groupId?: string) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const fetchTasks = async () => {
@@ -85,6 +88,42 @@ export function useTasks(groupId?: string) {
         title: "Aufgabe erstellt",
         description: `"${data.title}" wurde hinzugefügt.`,
       });
+
+      // If task is assigned to someone, send them an email notification
+      if (data.assigned_to && data.assigned_to !== user.id) {
+        // Get the assigned user's profile
+        const { data: assignedProfile } = await supabase
+          .from("profiles")
+          .select("email, display_name")
+          .eq("id", data.assigned_to)
+          .single();
+
+        // Get the group name
+        const { data: group } = await supabase
+          .from("groups")
+          .select("name")
+          .eq("id", data.group_id)
+          .single();
+
+        if (assignedProfile?.email) {
+          const assignerName = profile?.display_name || user.email?.split("@")[0] || "Jemand";
+          const dueDateFormatted = data.due_date 
+            ? format(new Date(data.due_date), "dd. MMMM yyyy", { locale: de })
+            : undefined;
+
+          sendTaskAssignedEmail(
+            assignedProfile.email,
+            data.title,
+            assignerName,
+            group?.name || "Gruppe",
+            data.description,
+            dueDateFormatted,
+            assignedProfile.display_name
+          ).catch((err) => {
+            console.error("Failed to send task assignment email:", err);
+          });
+        }
+      }
 
       await fetchTasks();
       return { data: newTask, error: null };
