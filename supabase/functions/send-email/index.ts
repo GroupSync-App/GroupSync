@@ -229,7 +229,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "GroupSync <onboarding@resend.dev>",
+        from: "GroupSync <noreply@groupsync.team>",
         to: [to],
         subject: emailContent.subject,
         html: emailContent.html,
