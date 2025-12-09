@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder";
+  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder" | "task-due-reminder" | "poll-reminder";
   to: string;
   recipientName?: string;
   // For group invite
@@ -24,6 +24,9 @@ interface EmailRequest {
   appointmentDate?: string;
   appointmentTime?: string;
   appointmentLocation?: string;
+  // For poll reminder
+  pollTitle?: string;
+  endsAt?: string;
 }
 
 function getWelcomeEmail(recipientName: string): { subject: string; html: string } {
@@ -126,6 +129,47 @@ function getTaskNotificationEmail(
   };
 }
 
+function getTaskDueReminderEmail(
+  recipientName: string,
+  taskTitle: string,
+  taskDescription: string,
+  dueDate: string,
+  assignerName: string
+): { subject: string; html: string } {
+  return {
+    subject: `⏰ Aufgabe fällig: ${taskTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Erinnerung: Deine Aufgabe ist bald fällig!
+        </p>
+        <div style="background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); border-radius: 12px; padding: 25px; margin: 20px 0; color: white;">
+          <h3 style="margin: 0 0 15px 0; font-size: 20px;">⏰ ${taskTitle}</h3>
+          <p style="margin: 8px 0; font-size: 16px; opacity: 0.9;">
+            ${taskDescription || "Keine Beschreibung"}
+          </p>
+          <p style="margin: 15px 0 0 0; font-size: 18px; font-weight: bold;">
+            📅 Fällig am: ${dueDate}
+          </p>
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Aufgabe zugewiesen von: <strong>${assignerName}</strong>
+        </p>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um die Aufgabe abzuschließen.
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
 function getAppointmentReminderEmail(
   recipientName: string,
   appointmentTitle: string,
@@ -160,6 +204,39 @@ function getAppointmentReminderEmail(
         </div>
         <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
           Vergiss nicht, pünktlich zu erscheinen!
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
+function getPollReminderEmail(
+  recipientName: string,
+  pollTitle: string,
+  endsAt: string
+): { subject: string; html: string } {
+  return {
+    subject: `🗳️ Umfrage endet bald: ${pollTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Eine Umfrage in deiner Gruppe endet bald und du hast noch nicht abgestimmt!
+        </p>
+        <div style="background: linear-gradient(135deg, #10B981 0%, #34D399 100%); border-radius: 12px; padding: 25px; margin: 20px 0; color: white;">
+          <h3 style="margin: 0 0 15px 0; font-size: 20px;">🗳️ ${pollTitle}</h3>
+          <p style="margin: 0; font-size: 18px; font-weight: bold;">
+            ⏰ Endet: ${endsAt}
+          </p>
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um deine Stimme abzugeben, bevor es zu spät ist!
         </p>
         <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
           Dein GroupSync Team
@@ -207,6 +284,15 @@ const handler = async (req: Request): Promise<Response> => {
           emailRequest.assignerName || "Jemand"
         );
         break;
+      case "task-due-reminder":
+        emailContent = getTaskDueReminderEmail(
+          recipientName,
+          emailRequest.taskTitle || "Aufgabe",
+          emailRequest.taskDescription || "",
+          emailRequest.dueDate || "",
+          emailRequest.assignerName || "Jemand"
+        );
+        break;
       case "appointment-reminder":
         emailContent = getAppointmentReminderEmail(
           recipientName,
@@ -214,6 +300,13 @@ const handler = async (req: Request): Promise<Response> => {
           emailRequest.appointmentDate || "",
           emailRequest.appointmentTime || "",
           emailRequest.appointmentLocation || ""
+        );
+        break;
+      case "poll-reminder":
+        emailContent = getPollReminderEmail(
+          recipientName,
+          emailRequest.pollTitle || "Umfrage",
+          emailRequest.endsAt || ""
         );
         break;
       default:

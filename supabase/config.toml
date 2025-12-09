@@ -2,3 +2,6 @@ project_id = "dldfidkftisyvxktyayx"
 
 [functions.send-email]
 verify_jwt = false
+
+[functions.check-reminders]
+verify_jwt = false

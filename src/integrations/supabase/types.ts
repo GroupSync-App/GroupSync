@@ -61,6 +61,30 @@ export type Database = {
           },
         ]
       }
+      email_reminders_sent: {
+        Row: {
+          id: string
+          reference_id: string
+          reminder_type: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reference_id: string
+          reminder_type: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reference_id?: string
+          reminder_type?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string

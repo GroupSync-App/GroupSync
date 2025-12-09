@@ -25,6 +25,16 @@ interface TaskNotificationEmailData {
   assignerName: string;
 }
 
+interface TaskDueReminderEmailData {
+  type: "task-due-reminder";
+  to: string;
+  recipientName?: string;
+  taskTitle: string;
+  taskDescription?: string;
+  dueDate?: string;
+  assignerName: string;
+}
+
 interface AppointmentReminderEmailData {
   type: "appointment-reminder";
   to: string;
@@ -35,11 +45,21 @@ interface AppointmentReminderEmailData {
   appointmentLocation?: string;
 }
 
+interface PollReminderEmailData {
+  type: "poll-reminder";
+  to: string;
+  recipientName?: string;
+  pollTitle: string;
+  endsAt: string;
+}
+
 type EmailData = 
   | WelcomeEmailData 
   | GroupInviteEmailData 
   | TaskNotificationEmailData 
-  | AppointmentReminderEmailData;
+  | TaskDueReminderEmailData
+  | AppointmentReminderEmailData
+  | PollReminderEmailData;
 
 export const sendEmail = async (data: EmailData): Promise<{ success: boolean; error?: string }> => {
   try {
@@ -96,6 +116,24 @@ export const sendTaskNotificationEmail = (
     assignerName,
   });
 
+export const sendTaskDueReminderEmail = (
+  to: string,
+  taskTitle: string,
+  assignerName: string,
+  taskDescription?: string,
+  dueDate?: string,
+  recipientName?: string
+) =>
+  sendEmail({
+    type: "task-due-reminder",
+    to,
+    recipientName,
+    taskTitle,
+    taskDescription,
+    dueDate,
+    assignerName,
+  });
+
 export const sendAppointmentReminderEmail = (
   to: string,
   appointmentTitle: string,
@@ -112,4 +150,18 @@ export const sendAppointmentReminderEmail = (
     appointmentDate,
     appointmentTime,
     appointmentLocation,
+  });
+
+export const sendPollReminderEmail = (
+  to: string,
+  pollTitle: string,
+  endsAt: string,
+  recipientName?: string
+) =>
+  sendEmail({
+    type: "poll-reminder",
+    to,
+    recipientName,
+    pollTitle,
+    endsAt,
   });
