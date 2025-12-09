@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendWelcomeEmail } from "@/lib/email";
 
 interface Profile {
   id: string;
@@ -126,6 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       return { error };
     }
+
+    // Send welcome email
+    const recipientName = displayName || email.split("@")[0];
+    sendWelcomeEmail(email, recipientName).catch((err) => {
+      console.error("Failed to send welcome email:", err);
+    });
 
     toast({
       title: "Willkommen bei GroupSync!",
