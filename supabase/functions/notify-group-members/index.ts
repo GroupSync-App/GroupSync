@@ -10,7 +10,7 @@ const corsHeaders = {
 interface NotifyRequest {
   groupId: string;
   excludeUserId?: string;
-  emailType: "poll-created" | "appointment-created";
+  emailType: "poll-created" | "appointment-created" | "task-created";
   emailData: Record<string, any>;
 }
 
