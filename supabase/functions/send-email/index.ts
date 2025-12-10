@@ -50,7 +50,7 @@ const colors = {
   error: "#EF4444",
 };
 
-// Reusable email wrapper
+// Reusable email wrapper with Helvetica font
 function getEmailWrapper(content: string): string {
   return `
     <!DOCTYPE html>
@@ -59,12 +59,12 @@ function getEmailWrapper(content: string): string {
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="margin: 0; padding: 0; background-color: ${colors.background}; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <body style="margin: 0; padding: 0; background-color: ${colors.background}; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
       <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 32px;">
           <h1 style="margin: 0; font-size: 32px; font-weight: 700; background: ${colors.gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">GroupSync</h1>
-          <p style="margin: 8px 0 0 0; color: ${colors.textMuted}; font-size: 14px;">Deine Lerngruppen-Plattform</p>
+          <p style="margin: 8px 0 0 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 300; font-style: italic;">Deine Lerngruppen-Plattform</p>
         </div>
         
         <!-- Card -->
@@ -74,10 +74,10 @@ function getEmailWrapper(content: string): string {
         
         <!-- Footer -->
         <div style="text-align: center; margin-top: 32px; padding-top: 24px;">
-          <p style="color: ${colors.textLight}; font-size: 13px; margin: 0;">
+          <p style="color: ${colors.textLight}; font-size: 13px; margin: 0; font-weight: 300;">
             © ${new Date().getFullYear()} GroupSync • Effizient zusammen lernen
           </p>
-          <p style="color: ${colors.textLight}; font-size: 12px; margin: 8px 0 0 0;">
+          <p style="color: ${colors.textLight}; font-size: 12px; margin: 8px 0 0 0; font-weight: 300; font-style: italic;">
             Diese E-Mail wurde automatisch generiert.
           </p>
         </div>
@@ -89,14 +89,14 @@ function getEmailWrapper(content: string): string {
 
 function getWelcomeEmail(recipientName: string): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      Willkommen bei GroupSync! Wir freuen uns, dass du dabei bist.
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      Willkommen bei <span style="font-weight: 600; text-decoration: underline;">GroupSync</span>! Wir freuen uns, dass du dabei bist.
     </p>
     
     <div style="background: ${colors.gradient}; border-radius: 12px; padding: 24px; margin: 24px 0;">
       <p style="color: white; font-size: 16px; font-weight: 600; margin: 0 0 16px 0;">Mit GroupSync kannst du:</p>
-      <ul style="color: white; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px;">
+      <ul style="color: white; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px; font-weight: 400;">
         <li>Lerngruppen erstellen und beitreten</li>
         <li>Termine koordinieren</li>
         <li>Aufgaben verteilen und verfolgen</li>
@@ -104,8 +104,8 @@ function getWelcomeEmail(recipientName: string): { subject: string; html: string
       </ul>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Viel Erfolg bei deinem Studium! 🎓
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      <span style="font-style: italic;">Viel Erfolg bei deinem Studium!</span> 🎓
     </p>
   `;
   
@@ -122,18 +122,18 @@ function getGroupInviteEmail(
   inviteCode: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${inviterName}</strong> hat dich eingeladen, der Gruppe <strong style="color: ${colors.textDark}">"${groupName}"</strong> beizutreten!
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${inviterName}</strong> hat dich eingeladen, der Gruppe <strong style="color: ${colors.textDark}; font-weight: 600;">"${groupName}"</strong> beizutreten!
     </p>
     
     <div style="background: ${colors.gradient}; border-radius: 12px; padding: 28px; text-align: center; margin: 24px 0;">
-      <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 1px;">Dein Einladungscode</p>
+      <p style="color: rgba(255,255,255,0.9); font-size: 12px; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 300;">Dein Einladungscode</p>
       <p style="color: white; font-size: 32px; font-weight: 700; margin: 0; letter-spacing: 6px; font-family: 'Monaco', 'Consolas', monospace;">${inviteCode}</p>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Gib diesen Code in GroupSync ein, um der Gruppe beizutreten.
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Gib diesen Code in <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> ein, um der Gruppe beizutreten.
     </p>
   `;
   
@@ -151,21 +151,21 @@ function getTaskNotificationEmail(
   assignerName: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${assignerName}</strong> hat dir eine neue Aufgabe zugewiesen:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${assignerName}</strong> hat dir eine neue Aufgabe zugewiesen:
     </p>
     
     <div style="background: ${colors.background}; border-left: 4px solid ${colors.primary}; border-radius: 0 12px 12px 0; padding: 20px; margin: 24px 0;">
-      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px;">📋 ${taskTitle}</h3>
-      <p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5;">${taskDescription || "Keine Beschreibung"}</p>
+      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px; font-weight: 700;">📋 ${taskTitle}</h3>
+      <p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5; font-style: italic;">${taskDescription || "Keine Beschreibung"}</p>
       <p style="color: ${colors.primary}; font-weight: 600; margin: 0; font-size: 15px;">
-        📅 Fällig: ${dueDate || "Kein Datum festgelegt"}
+        <span style="font-weight: 600;">📅 Fällig:</span> <span style="font-weight: 400;">${dueDate || "Kein Datum festgelegt"}</span>
       </p>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um die Aufgabe zu bearbeiten.
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um die Aufgabe zu bearbeiten.
     </p>
   `;
   
@@ -183,26 +183,26 @@ function getTaskDueReminderEmail(
   assignerName: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      Erinnerung: Deine Aufgabe ist bald fällig!
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <span style="font-style: italic;">Erinnerung:</span> Deine Aufgabe ist bald fällig!
     </p>
     
     <div style="background: linear-gradient(135deg, ${colors.warning} 0%, #FBBF24 100%); border-radius: 12px; padding: 24px; margin: 24px 0; color: white;">
-      <h3 style="margin: 0 0 12px 0; font-size: 20px;">⏰ ${taskTitle}</h3>
-      <p style="margin: 0 0 16px 0; font-size: 15px; opacity: 0.95;">
+      <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700;">⏰ ${taskTitle}</h3>
+      <p style="margin: 0 0 16px 0; font-size: 15px; opacity: 0.95; font-style: italic; font-weight: 300;">
         ${taskDescription || "Keine Beschreibung"}
       </p>
       <p style="margin: 0; font-size: 17px; font-weight: 600;">
-        📅 Fällig am: ${dueDate}
+        <span style="font-weight: 600;">📅 Fällig am:</span> <span style="font-weight: 400;">${dueDate}</span>
       </p>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 15px; line-height: 1.6; margin: 16px 0 0 0;">
-      Aufgabe zugewiesen von: <strong style="color: ${colors.textDark}">${assignerName}</strong>
+    <p style="color: ${colors.textMuted}; font-size: 15px; line-height: 1.6; margin: 16px 0 0 0; font-weight: 400;">
+      Aufgabe zugewiesen von: <strong style="color: ${colors.textDark}; font-weight: 600;">${assignerName}</strong>
     </p>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 16px 0 0 0;">
-      Melde dich bei GroupSync an, um die Aufgabe abzuschließen.
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 16px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um die Aufgabe abzuschließen.
     </p>
   `;
   
@@ -220,27 +220,27 @@ function getAppointmentReminderEmail(
   appointmentLocation: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      Erinnerung an deinen bevorstehenden Termin:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <span style="font-style: italic;">Erinnerung</span> an deinen bevorstehenden Termin:
     </p>
     
     <div style="background: ${colors.gradient}; border-radius: 12px; padding: 24px; margin: 24px 0; color: white;">
-      <h3 style="margin: 0 0 16px 0; font-size: 20px;">📅 ${appointmentTitle}</h3>
-      <p style="margin: 8px 0; font-size: 16px;">
-        🗓️ <strong>Datum:</strong> ${appointmentDate}
+      <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700;">📅 ${appointmentTitle}</h3>
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        🗓️ <strong style="font-weight: 600;">Datum:</strong> ${appointmentDate}
       </p>
-      <p style="margin: 8px 0; font-size: 16px;">
-        ⏰ <strong>Uhrzeit:</strong> ${appointmentTime}
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        ⏰ <strong style="font-weight: 600;">Uhrzeit:</strong> ${appointmentTime}
       </p>
       ${appointmentLocation ? `
-      <p style="margin: 8px 0; font-size: 16px;">
-        📍 <strong>Ort:</strong> ${appointmentLocation}
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        📍 <strong style="font-weight: 600;">Ort:</strong> ${appointmentLocation}
       </p>
       ` : ""}
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400; font-style: italic;">
       Vergiss nicht, pünktlich zu erscheinen!
     </p>
   `;
@@ -257,20 +257,20 @@ function getPollReminderEmail(
   endsAt: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
       Eine Umfrage in deiner Gruppe endet bald und du hast noch nicht abgestimmt!
     </p>
     
     <div style="background: linear-gradient(135deg, ${colors.success} 0%, #34D399 100%); border-radius: 12px; padding: 24px; margin: 24px 0; color: white;">
-      <h3 style="margin: 0 0 12px 0; font-size: 20px;">🗳️ ${pollTitle}</h3>
-      <p style="margin: 0; font-size: 17px; font-weight: 600;">
-        ⏰ Endet: ${endsAt}
+      <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700;">🗳️ ${pollTitle}</h3>
+      <p style="margin: 0; font-size: 17px; font-weight: 400;">
+        <span style="font-weight: 600;">⏰ Endet:</span> ${endsAt}
       </p>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um deine Stimme abzugeben!
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um deine Stimme abzugeben!
     </p>
   `;
   
@@ -289,19 +289,19 @@ function getPollCreatedEmail(
   endsAt: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${creatorName}</strong> hat eine neue Umfrage in der Gruppe <strong style="color: ${colors.textDark}">"${groupName}"</strong> erstellt:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${creatorName}</strong> hat eine neue Umfrage in der Gruppe <strong style="color: ${colors.textDark}; font-weight: 600;">"${groupName}"</strong> erstellt:
     </p>
     
     <div style="background: linear-gradient(135deg, ${colors.success} 0%, #34D399 100%); border-radius: 12px; padding: 24px; margin: 24px 0; color: white;">
-      <h3 style="margin: 0 0 12px 0; font-size: 20px;">🗳️ ${pollTitle}</h3>
-      ${pollDescription ? `<p style="margin: 0 0 12px 0; font-size: 15px; opacity: 0.95;">${pollDescription}</p>` : ""}
-      ${endsAt ? `<p style="margin: 0; font-size: 15px;"><strong>⏰ Endet:</strong> ${endsAt}</p>` : ""}
+      <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700;">🗳️ ${pollTitle}</h3>
+      ${pollDescription ? `<p style="margin: 0 0 12px 0; font-size: 15px; opacity: 0.95; font-style: italic; font-weight: 300;">${pollDescription}</p>` : ""}
+      ${endsAt ? `<p style="margin: 0; font-size: 15px; font-weight: 400;"><strong style="font-weight: 600;">⏰ Endet:</strong> ${endsAt}</p>` : ""}
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um deine Stimme abzugeben!
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um deine Stimme abzugeben!
     </p>
   `;
   
@@ -322,29 +322,29 @@ function getAppointmentCreatedEmail(
   groupName: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${creatorName}</strong> hat einen neuen Termin in der Gruppe <strong style="color: ${colors.textDark}">"${groupName}"</strong> erstellt:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${creatorName}</strong> hat einen neuen Termin in der Gruppe <strong style="color: ${colors.textDark}; font-weight: 600;">"${groupName}"</strong> erstellt:
     </p>
     
     <div style="background: ${colors.gradient}; border-radius: 12px; padding: 24px; margin: 24px 0; color: white;">
-      <h3 style="margin: 0 0 16px 0; font-size: 20px;">📅 ${appointmentTitle}</h3>
-      ${appointmentDescription ? `<p style="margin: 0 0 12px 0; font-size: 15px; opacity: 0.95;">${appointmentDescription}</p>` : ""}
-      <p style="margin: 8px 0; font-size: 16px;">
-        🗓️ <strong>Datum:</strong> ${appointmentDate}
+      <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700;">📅 ${appointmentTitle}</h3>
+      ${appointmentDescription ? `<p style="margin: 0 0 12px 0; font-size: 15px; opacity: 0.95; font-style: italic; font-weight: 300;">${appointmentDescription}</p>` : ""}
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        🗓️ <strong style="font-weight: 600;">Datum:</strong> ${appointmentDate}
       </p>
-      <p style="margin: 8px 0; font-size: 16px;">
-        ⏰ <strong>Uhrzeit:</strong> ${appointmentTime}
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        ⏰ <strong style="font-weight: 600;">Uhrzeit:</strong> ${appointmentTime}
       </p>
       ${appointmentLocation ? `
-      <p style="margin: 8px 0; font-size: 16px;">
-        📍 <strong>Ort:</strong> ${appointmentLocation}
+      <p style="margin: 8px 0; font-size: 16px; font-weight: 400;">
+        📍 <strong style="font-weight: 600;">Ort:</strong> ${appointmentLocation}
       </p>
       ` : ""}
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um den Termin zu sehen!
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um den Termin zu sehen!
     </p>
   `;
   
@@ -363,21 +363,21 @@ function getTaskAssignedEmail(
   groupName: string
 ): { subject: string; html: string } {
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${assignerName}</strong> hat dir eine Aufgabe in der Gruppe <strong style="color: ${colors.textDark}">"${groupName}"</strong> zugewiesen:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${assignerName}</strong> hat dir eine Aufgabe in der Gruppe <strong style="color: ${colors.textDark}; font-weight: 600;">"${groupName}"</strong> zugewiesen:
     </p>
     
     <div style="background: ${colors.background}; border-left: 4px solid ${colors.primary}; border-radius: 0 12px 12px 0; padding: 20px; margin: 24px 0;">
-      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px;">📋 ${taskTitle}</h3>
-      ${taskDescription ? `<p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5;">${taskDescription}</p>` : ""}
-      <p style="color: ${colors.primary}; font-weight: 600; margin: 0; font-size: 15px;">
-        📅 Fällig: ${dueDate || "Kein Datum festgelegt"}
+      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px; font-weight: 700;">📋 ${taskTitle}</h3>
+      ${taskDescription ? `<p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5; font-style: italic;">${taskDescription}</p>` : ""}
+      <p style="color: ${colors.primary}; margin: 0; font-size: 15px;">
+        <span style="font-weight: 600;">📅 Fällig:</span> <span style="font-weight: 400;">${dueDate || "Kein Datum festgelegt"}</span>
       </p>
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um die Aufgabe zu bearbeiten.
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um die Aufgabe zu bearbeiten.
     </p>
   `;
   
@@ -408,24 +408,24 @@ function getTaskCreatedEmail(
   };
   
   const content = `
-    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px;">Hallo ${recipientName}! 👋</h2>
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-      <strong style="color: ${colors.textDark}">${creatorName}</strong> hat eine neue Aufgabe in der Gruppe <strong style="color: ${colors.textDark}">"${groupName}"</strong> erstellt:
+    <h2 style="color: ${colors.textDark}; margin: 0 0 16px 0; font-size: 24px; font-weight: 700;">Hallo ${recipientName}! 👋</h2>
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; font-weight: 400;">
+      <strong style="color: ${colors.textDark}; font-weight: 600;">${creatorName}</strong> hat eine neue Aufgabe in der Gruppe <strong style="color: ${colors.textDark}; font-weight: 600;">"${groupName}"</strong> erstellt:
     </p>
     
     <div style="background: ${colors.background}; border-left: 4px solid ${colors.primary}; border-radius: 0 12px 12px 0; padding: 20px; margin: 24px 0;">
-      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px;">📋 ${taskTitle}</h3>
-      ${taskDescription ? `<p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5;">${taskDescription}</p>` : ""}
+      <h3 style="color: ${colors.textDark}; margin: 0 0 12px 0; font-size: 18px; font-weight: 700;">📋 ${taskTitle}</h3>
+      ${taskDescription ? `<p style="color: ${colors.textMuted}; margin: 0 0 16px 0; font-size: 15px; line-height: 1.5; font-style: italic;">${taskDescription}</p>` : ""}
       <p style="margin: 0 0 12px 0; font-size: 14px;">
         <span style="background: ${priorityColors[priority] || priorityColors.medium}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
           ${priorityLabels[priority] || priorityLabels.medium}
         </span>
       </p>
-      ${dueDate ? `<p style="color: ${colors.primary}; font-weight: 600; margin: 0; font-size: 15px;">📅 Fällig: ${dueDate}</p>` : ""}
+      ${dueDate ? `<p style="color: ${colors.primary}; margin: 0; font-size: 15px;"><span style="font-weight: 600;">📅 Fällig:</span> <span style="font-weight: 400;">${dueDate}</span></p>` : ""}
     </div>
     
-    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0;">
-      Melde dich bei GroupSync an, um die Aufgabe zu sehen!
+    <p style="color: ${colors.textMuted}; font-size: 16px; line-height: 1.6; margin: 24px 0 0 0; font-weight: 400;">
+      Melde dich bei <span style="text-decoration: underline; font-weight: 600;">GroupSync</span> an, um die Aufgabe zu sehen!
     </p>
   `;
   
