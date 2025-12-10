@@ -40,7 +40,7 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
           <div className="container flex h-14 items-center justify-between">
             <Link to="/dashboard" className="flex items-center gap-3">
               <img 
-                src="/groupsync-logo.png?v=20251210" 
+                src="/groupsync-logo.png?v=2" 
                 alt="GroupSync Logo" 
                 className="w-8 h-8 rounded-lg" 
               />
