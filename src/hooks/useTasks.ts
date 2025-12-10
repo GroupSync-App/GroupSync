@@ -157,12 +157,22 @@ export function useTasks(groupId?: string) {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from("tasks")
         .delete()
-        .eq("id", taskId);
+        .eq("id", taskId)
+        .select();
 
       if (error) throw error;
+
+      if (!data || data.length === 0) {
+        toast({
+          title: "Keine Berechtigung",
+          description: "Du kannst diese Aufgabe nicht löschen.",
+          variant: "destructive",
+        });
+        return { error: new Error("No permission to delete") };
+      }
 
       toast({
         title: "Aufgabe gelöscht",
@@ -173,6 +183,11 @@ export function useTasks(groupId?: string) {
       return { error: null };
     } catch (error) {
       console.error("Error deleting task:", error);
+      toast({
+        title: "Fehler",
+        description: "Aufgabe konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
       return { error };
     }
   };
