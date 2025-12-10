@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -39,9 +39,11 @@ export function AppLayout({ children, showHeader = true }: AppLayoutProps) {
         <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
           <div className="container flex h-14 items-center justify-between">
             <Link to="/dashboard" className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
-                <Users className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <img 
+                src="/groupsync-logo.png?v=2" 
+                alt="GroupSync Logo" 
+                className="w-8 h-8 rounded-lg" 
+              />
               <div className="flex flex-col">
                 <span className="text-lg font-semibold text-foreground leading-tight">GroupSync</span>
                 <span className="text-xs text-muted-foreground hidden sm:block">Zusammen mehr erreichen</span>

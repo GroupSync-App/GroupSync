@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -75,12 +75,11 @@ export default function Login() {
 
       <PageContainer size="sm" className="py-0">
         <div className="flex flex-col items-center mb-8 animate-fade-in">
-          <div 
-            className="flex h-14 w-14 items-center justify-center rounded-2xl mb-4 shadow-lg"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Users className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <img 
+            src="/groupsync-logo.png?v=2" 
+            alt="GroupSync Logo" 
+            className="w-14 h-14 rounded-2xl mb-4 shadow-lg" 
+          />
           <h1 className="text-3xl font-bold text-foreground">GroupSync</h1>
           <p className="text-muted-foreground mt-1">Gruppenarbeit, einfach organisiert.</p>
         </div>
