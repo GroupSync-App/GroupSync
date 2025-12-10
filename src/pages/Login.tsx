@@ -76,7 +76,7 @@ export default function Login() {
       <PageContainer size="sm" className="py-0">
         <div className="flex flex-col items-center mb-8 animate-fade-in">
           <img 
-            src="/groupsync-logo.png?v=2" 
+            src="/groupsync-logo.png?v=20251210" 
             alt="GroupSync Logo" 
             className="w-14 h-14 rounded-2xl mb-4 shadow-lg" 
           />
