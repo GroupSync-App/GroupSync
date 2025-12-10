@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder" | "task-due-reminder" | "poll-reminder" | "poll-created" | "appointment-created" | "task-assigned";
+  type: "welcome" | "group-invite" | "task-notification" | "appointment-reminder" | "task-due-reminder" | "poll-reminder" | "poll-created" | "appointment-created" | "task-assigned" | "task-created";
   to: string;
   recipientName?: string;
   // For group invite
@@ -19,6 +19,7 @@ interface EmailRequest {
   taskDescription?: string;
   dueDate?: string;
   assignerName?: string;
+  priority?: string;
   // For appointment reminder
   appointmentTitle?: string;
   appointmentDate?: string;
@@ -27,7 +28,7 @@ interface EmailRequest {
   // For poll reminder
   pollTitle?: string;
   endsAt?: string;
-  // For poll/appointment created
+  // For poll/appointment/task created
   creatorName?: string;
   pollDescription?: string;
   appointmentDescription?: string;
@@ -369,6 +370,57 @@ function getTaskAssignedEmail(
   };
 }
 
+function getTaskCreatedEmail(
+  recipientName: string,
+  taskTitle: string,
+  taskDescription: string,
+  dueDate: string,
+  priority: string,
+  creatorName: string,
+  groupName: string
+): { subject: string; html: string } {
+  const priorityLabels: Record<string, string> = {
+    low: "Niedrig",
+    medium: "Mittel",
+    high: "Hoch"
+  };
+  const priorityColors: Record<string, string> = {
+    low: "#10B981",
+    medium: "#F59E0B",
+    high: "#EF4444"
+  };
+  return {
+    subject: `📋 Neue Aufgabe: ${taskTitle}`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #8B5CF6; margin: 0;">GroupSync</h1>
+        </div>
+        <h2 style="color: #1f2937;">Hallo ${recipientName}! 👋</h2>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          <strong>${creatorName}</strong> hat eine neue Aufgabe in der Gruppe <strong>"${groupName}"</strong> erstellt:
+        </p>
+        <div style="background: #f3f4f6; border-left: 4px solid #8B5CF6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h3 style="color: #1f2937; margin: 0 0 10px 0;">📋 ${taskTitle}</h3>
+          ${taskDescription ? `<p style="color: #4b5563; margin: 0 0 15px 0;">${taskDescription}</p>` : ""}
+          <p style="margin: 8px 0; font-size: 14px;">
+            <span style="background: ${priorityColors[priority] || priorityColors.medium}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+              ${priorityLabels[priority] || priorityLabels.medium}
+            </span>
+          </p>
+          ${dueDate ? `<p style="color: #8B5CF6; font-weight: 600; margin: 10px 0 0 0;">📅 Fällig: ${dueDate}</p>` : ""}
+        </div>
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+          Melde dich bei GroupSync an, um die Aufgabe zu sehen!
+        </p>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 40px;">
+          Dein GroupSync Team
+        </p>
+      </div>
+    `,
+  };
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -461,6 +513,17 @@ const handler = async (req: Request): Promise<Response> => {
           emailRequest.taskDescription || "",
           emailRequest.dueDate || "",
           emailRequest.assignerName || "Jemand",
+          emailRequest.groupName || "Gruppe"
+        );
+        break;
+      case "task-created":
+        emailContent = getTaskCreatedEmail(
+          recipientName,
+          emailRequest.taskTitle || "Aufgabe",
+          emailRequest.taskDescription || "",
+          emailRequest.dueDate || "",
+          emailRequest.priority || "medium",
+          emailRequest.creatorName || "Jemand",
           emailRequest.groupName || "Gruppe"
         );
         break;

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { sendTaskAssignedEmail } from "@/lib/email";
+import { sendTaskAssignedEmail, notifyGroupMembers } from "@/lib/email";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -89,7 +89,28 @@ export function useTasks(groupId?: string) {
         description: `"${data.title}" wurde hinzugefügt.`,
       });
 
-      // If task is assigned to someone, send them an email notification
+      const creatorName = profile?.display_name || user.email?.split("@")[0] || "Jemand";
+      const dueDateFormatted = data.due_date 
+        ? format(new Date(data.due_date), "dd. MMMM yyyy", { locale: de })
+        : undefined;
+
+      // Notify all group members about the new task
+      notifyGroupMembers(
+        data.group_id,
+        user.id,
+        "task-created",
+        {
+          taskTitle: data.title,
+          taskDescription: data.description,
+          dueDate: dueDateFormatted,
+          priority: data.priority || "medium",
+          creatorName,
+        }
+      ).catch((err) => {
+        console.error("Failed to notify group members:", err);
+      });
+
+      // If task is assigned to someone specific, send them an additional assignment email
       if (data.assigned_to && data.assigned_to !== user.id) {
         // Get the assigned user's profile
         const { data: assignedProfile } = await supabase
@@ -106,15 +127,10 @@ export function useTasks(groupId?: string) {
           .single();
 
         if (assignedProfile?.email) {
-          const assignerName = profile?.display_name || user.email?.split("@")[0] || "Jemand";
-          const dueDateFormatted = data.due_date 
-            ? format(new Date(data.due_date), "dd. MMMM yyyy", { locale: de })
-            : undefined;
-
           sendTaskAssignedEmail(
             assignedProfile.email,
             data.title,
-            assignerName,
+            creatorName,
             group?.name || "Gruppe",
             data.description,
             dueDateFormatted,

@@ -274,7 +274,7 @@ export const sendTaskAssignedEmail = (
 export const notifyGroupMembers = async (
   groupId: string,
   excludeUserId: string,
-  emailType: "poll-created" | "appointment-created",
+  emailType: "poll-created" | "appointment-created" | "task-created",
   emailData: Record<string, any>
 ): Promise<{ success: boolean; error?: string }> => {
   try {
