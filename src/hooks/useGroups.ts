@@ -27,6 +27,7 @@ export interface GroupMember {
     study_program: string | null;
     avatar_url: string | null;
     availability: Record<string, string[]> | null;
+    skills: string[] | null;
   };
 }
 
@@ -90,7 +91,7 @@ export function useGroups() {
           const userIds = (members || []).map((m) => m.user_id);
           const { data: profiles } = await supabase
             .from("profiles")
-            .select("id, display_name, study_program, avatar_url, availability")
+            .select("id, display_name, study_program, avatar_url, availability, skills")
             .in("id", userIds);
 
           const profileMap = new Map(
@@ -291,7 +292,7 @@ export function useGroups() {
     const userIds = (members || []).map((m) => m.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name, study_program, avatar_url, availability")
+      .select("id, display_name, study_program, avatar_url, availability, skills")
       .in("id", userIds);
 
     const profileMap = new Map(

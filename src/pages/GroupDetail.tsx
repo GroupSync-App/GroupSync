@@ -342,6 +342,20 @@ export default function GroupDetail() {
                           {member.profile.study_program}
                         </p>
                       )}
+                      {member.profile?.skills && member.profile.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {member.profile.skills.slice(0, 3).map((skill) => (
+                            <Badge key={skill} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {member.profile.skills.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{member.profile.skills.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {member.role === "owner" && (
                       <Badge variant="secondary">Ersteller</Badge>
