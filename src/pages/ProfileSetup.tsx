@@ -8,25 +8,57 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, ClipboardList, Loader2 } from "lucide-react";
 import { SkillsSelector } from "@/components/profile/SkillsSelector";
 import { AvailabilityGrid, AvailabilityData } from "@/components/profile/AvailabilityGrid";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
-const UNIVERSITIES = [
+const INSTITUTIONS = [
+  // Universitäten
   "Technische Universität München",
   "Ludwig-Maximilians-Universität München",
   "Universität Hamburg",
+  "Leuphana Universität Lüneburg",
   "Freie Universität Berlin",
   "Humboldt-Universität zu Berlin",
+  "Technische Universität Berlin",
   "RWTH Aachen",
   "Universität Heidelberg",
   "Universität zu Köln",
-  "Universität Frankfurt",
+  "Goethe-Universität Frankfurt",
   "Universität Stuttgart",
-  "Andere",
+  "Universität Bremen",
+  "Leibniz Universität Hannover",
+  "Universität Leipzig",
+  "Universität Bonn",
+  "Universität Münster",
+  "Universität Freiburg",
+  "Universität Göttingen",
+  "Universität Tübingen",
+  "Universität Mannheim",
+  "Universität Duisburg-Essen",
+  // Hochschulen
+  "HAW Hamburg",
+  "Hochschule für Angewandte Wissenschaften München",
+  "Hochschule Osnabrück",
+  "TH Köln",
+  "HTW Berlin",
+  "Hochschule für Technik und Wirtschaft Dresden",
+  "FH Dortmund",
+  "Hochschule Hannover",
+  "Hochschule Bremen",
+  "Hochschule Darmstadt",
+  "Hochschule RheinMain",
+  "Hochschule Karlsruhe",
+  "Hochschule Esslingen",
+  "FH Aachen",
+  "Hochschule Düsseldorf",
+  "Hochschule Niederrhein",
 ];
 
 const STUDY_PROGRAMS = [
@@ -55,6 +87,7 @@ export default function ProfileSetup() {
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [openInstitution, setOpenInstitution] = useState(false);
 
   const [university, setUniversity] = useState("");
   const [studyProgram, setStudyProgram] = useState("");
@@ -62,6 +95,10 @@ export default function ProfileSetup() {
   const [skills, setSkills] = useState<string[]>([]);
   const [availability, setAvailability] = useState<AvailabilityData>({});
   const [preferredGroupSize, setPreferredGroupSize] = useState(4);
+
+  const filteredInstitutions = INSTITUTIONS.filter(inst =>
+    inst.toLowerCase().includes(university.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,19 +184,56 @@ export default function ProfileSetup() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="university">Universität *</Label>
-                <Select value={university} onValueChange={setUniversity}>
-                  <SelectTrigger id="university">
-                    <SelectValue placeholder="Wähle deine Universität" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UNIVERSITIES.map((uni) => (
-                      <SelectItem key={uni} value={uni}>
-                        {uni}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Hochschule / Universität *</Label>
+                <Popover open={openInstitution} onOpenChange={setOpenInstitution}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openInstitution}
+                      className="w-full justify-between font-normal"
+                    >
+                      {university || "Hochschule eingeben oder auswählen..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Hochschule suchen..."
+                        value={university}
+                        onValueChange={setUniversity}
+                      />
+                      <CommandList>
+                        {university && filteredInstitutions.length === 0 && (
+                          <CommandEmpty>
+                            <span className="text-muted-foreground">„{university}" wird verwendet</span>
+                          </CommandEmpty>
+                        )}
+                        <CommandGroup>
+                          {filteredInstitutions.slice(0, 10).map((inst) => (
+                            <CommandItem
+                              key={inst}
+                              value={inst}
+                              onSelect={() => {
+                                setUniversity(inst);
+                                setOpenInstitution(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  university === inst ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {inst}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">
