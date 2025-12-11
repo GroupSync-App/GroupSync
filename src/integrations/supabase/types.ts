@@ -122,6 +122,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       groups: {
@@ -167,6 +174,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -389,10 +403,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tasks_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -406,7 +434,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          availability: Json | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          faculty: string | null
+          id: string | null
+          preferred_group_size: number | null
+          profile_completed: boolean | null
+          semester: number | null
+          skills: string[] | null
+          study_program: string | null
+          university: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          faculty?: string | null
+          id?: string | null
+          preferred_group_size?: number | null
+          profile_completed?: boolean | null
+          semester?: number | null
+          skills?: string[] | null
+          study_program?: string | null
+          university?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: Json | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          faculty?: string | null
+          id?: string | null
+          preferred_group_size?: number | null
+          profile_completed?: boolean | null
+          semester?: number | null
+          skills?: string[] | null
+          study_program?: string | null
+          university?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_group_by_invite_code: {
@@ -419,6 +497,22 @@ export type Database = {
           member_count: number
           name: string
           subject: string
+        }[]
+      }
+      get_group_member_profiles: {
+        Args: { _group_id: string }
+        Returns: {
+          availability: Json
+          avatar_url: string
+          bio: string
+          display_name: string
+          faculty: string
+          id: string
+          preferred_group_size: number
+          semester: number
+          skills: string[]
+          study_program: string
+          university: string
         }[]
       }
       is_group_member: {
