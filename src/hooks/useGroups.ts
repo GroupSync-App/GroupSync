@@ -87,12 +87,9 @@ export function useGroups() {
             return { ...group, members: [], memberCount: 0 };
           }
 
-          // Fetch profiles separately to ensure RLS works correctly
-          const userIds = (members || []).map((m) => m.user_id);
+          // Fetch profiles using secure RPC function (excludes sensitive data like email)
           const { data: profiles } = await supabase
-            .from("profiles")
-            .select("id, display_name, study_program, avatar_url, availability, skills")
-            .in("id", userIds);
+            .rpc("get_group_member_profiles", { _group_id: group.id });
 
           const profileMap = new Map(
             (profiles || []).map((p) => [p.id, p])
@@ -288,12 +285,9 @@ export function useGroups() {
       .select("*")
       .eq("group_id", groupId);
 
-    // Fetch profiles separately to ensure RLS works correctly
-    const userIds = (members || []).map((m) => m.user_id);
+    // Fetch profiles using secure RPC function (excludes sensitive data like email)
     const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, display_name, study_program, avatar_url, availability, skills")
-      .in("id", userIds);
+      .rpc("get_group_member_profiles", { _group_id: groupId });
 
     const profileMap = new Map(
       (profiles || []).map((p) => [p.id, p])
