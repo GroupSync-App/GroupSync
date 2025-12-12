@@ -178,13 +178,6 @@ export default function GroupDetail() {
             )}
           </div>
 
-          {/* Google Drive Links */}
-          <Card>
-            <CardContent className="pt-6">
-              <GroupLinks groupId={id!} />
-            </CardContent>
-          </Card>
-
           {/* Description */}
           {group.description && (
             <Card>
@@ -196,6 +189,13 @@ export default function GroupDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Google Drive Links */}
+          <Card>
+            <CardContent className="pt-6">
+              <GroupLinks groupId={id!} />
+            </CardContent>
+          </Card>
 
 {/* Tasks */}
           <TaskList 
