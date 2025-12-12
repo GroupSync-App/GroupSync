@@ -11,6 +11,7 @@ export interface Group {
   invite_code: string;
   max_members: number;
   deadline: string | null;
+  drive_link: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
