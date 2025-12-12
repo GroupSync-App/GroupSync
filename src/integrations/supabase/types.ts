@@ -130,6 +130,7 @@ export type Database = {
           created_by: string
           deadline: string | null
           description: string | null
+          drive_link: string | null
           id: string
           invite_code: string
           max_members: number
@@ -142,6 +143,7 @@ export type Database = {
           created_by: string
           deadline?: string | null
           description?: string | null
+          drive_link?: string | null
           id?: string
           invite_code?: string
           max_members?: number
@@ -154,6 +156,7 @@ export type Database = {
           created_by?: string
           deadline?: string | null
           description?: string | null
+          drive_link?: string | null
           id?: string
           invite_code?: string
           max_members?: number

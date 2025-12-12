@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2, Clock, Vote } from "lucide-react";
+import { ArrowLeft, Calendar, Copy, Users, Loader2, LogOut, Trash2, Clock, Vote, FolderOpen } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { useAppointments } from "@/hooks/useAppointments";
 import { TaskList } from "@/components/tasks/TaskList";
@@ -26,10 +26,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useGroups, GroupWithMembers } from "@/hooks/useGroups";
 import { usePolls } from "@/hooks/usePolls";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { CreatePollDialog } from "@/components/polls/CreatePollDialog";
@@ -43,6 +54,9 @@ export default function GroupDetail() {
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDriveLinkDialog, setShowDriveLinkDialog] = useState(false);
+  const [driveLink, setDriveLink] = useState("");
+  const [savingDriveLink, setSavingDriveLink] = useState(false);
   const { tasks, loading: tasksLoading, error: tasksError, createTask, updateTaskStatus, deleteTask, refetch: refetchTasks } = useTasks(id);
   const { appointments, loading: appointmentsLoading, error: appointmentsError, createAppointment, deleteAppointment, refetch: refetchAppointments } = useAppointments(id);
   const { polls, loading: pollsLoading, createPoll, vote, deletePoll } = usePolls(id);
@@ -99,6 +113,54 @@ export default function GroupDetail() {
     } catch {
       return null;
     }
+  };
+
+  const isValidGoogleDriveUrl = (url: string) => {
+    return url.includes("drive.google.com") || url.includes("docs.google.com");
+  };
+
+  const handleSaveDriveLink = async () => {
+    if (!group || !id) return;
+    
+    if (driveLink && !isValidGoogleDriveUrl(driveLink)) {
+      toast({
+        title: "Ungültiger Link",
+        description: "Bitte gib einen gültigen Google Drive Link ein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSavingDriveLink(true);
+    try {
+      const { error } = await supabase
+        .from("groups")
+        .update({ drive_link: driveLink || null })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setGroup({ ...group, drive_link: driveLink || null });
+      setShowDriveLinkDialog(false);
+      toast({
+        title: "Gespeichert",
+        description: driveLink ? "Google Drive Link wurde hinzugefügt." : "Google Drive Link wurde entfernt.",
+      });
+    } catch (error) {
+      console.error("Error saving drive link:", error);
+      toast({
+        title: "Fehler",
+        description: "Link konnte nicht gespeichert werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDriveLink(false);
+    }
+  };
+
+  const openDriveLinkDialog = () => {
+    setDriveLink(group?.drive_link || "");
+    setShowDriveLinkDialog(true);
   };
 
   if (loading) {
@@ -174,6 +236,26 @@ export default function GroupDetail() {
                 <span>Deadline: {formatDeadline(group.deadline)}</span>
               </div>
             )}
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FolderOpen className="h-4 w-4" />
+              {group.drive_link ? (
+                <a
+                  href={group.drive_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary hover:underline transition-colors"
+                >
+                  Google Drive öffnen
+                </a>
+              ) : (
+                <button
+                  onClick={openDriveLinkDialog}
+                  className="hover:text-primary transition-colors"
+                >
+                  Google Drive verknüpfen
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -436,6 +518,50 @@ export default function GroupDetail() {
             </Card>
           )}
         </div>
+
+        {/* Google Drive Link Dialog */}
+        <Dialog open={showDriveLinkDialog} onOpenChange={setShowDriveLinkDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Google Drive verknüpfen</DialogTitle>
+              <DialogDescription>
+                Füge einen Google Drive Link für diese Gruppe hinzu.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="drive-link">Google Drive URL</Label>
+                <Input
+                  id="drive-link"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  value={driveLink}
+                  onChange={(e) => setDriveLink(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              {group?.drive_link && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDriveLink("");
+                    handleSaveDriveLink();
+                  }}
+                  disabled={savingDriveLink}
+                  className="text-destructive hover:text-destructive"
+                >
+                  Link entfernen
+                </Button>
+              )}
+              <Button onClick={handleSaveDriveLink} disabled={savingDriveLink}>
+                {savingDriveLink ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Speichern
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </PageContainer>
     </AppLayout>
   );
